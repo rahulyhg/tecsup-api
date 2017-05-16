@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/default">
+<head>
+    <title>Template Action</title>
+    <script type="text/javascript" th:inline="javascript">
+        /*<![CDATA[*/
+        $(function(){
+            console.log('Bienvenido a '+/*[[#{app.title}]]*/ 'Spring?');
+        })
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="jumbotron">
+            <h1>Welcome to <th:block th:text="#{app.title}">Spring Boot</th:block></h1>
+            <p>Now is: <b th:text="${execInfo.now.time}">date and time</b></p>
+            <a href="#" th:href="@{/api/users}" target="_blank" class="btn btn-success">Rest Test</a>
+        </div>
+
+    </div>
+</body>
+</html>
