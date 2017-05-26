@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 import pe.edu.tecsup.api.models.*;
 import pe.edu.tecsup.api.utils.ColorPalette;
-import pe.edu.tecsup.api.utils.Constant;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -32,15 +31,15 @@ public class StudentRepository {
         try {
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
 
-            simpleJdbcCall.withSchemaName("COMERCIAL").withCatalogName("SCOB_PROCESO").withProcedureName("CONSULTA_DEUDA_PFR");
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("FINANZAS_DEUDASXALUMNO");
 
             SqlParameterSource in = new MapSqlParameterSource()
-                    .addValue("PCODALUMNO", id);
+                    .addValue("E_C_CODALUMNO", id);
 
             Map<String, Object> out = simpleJdbcCall.execute(in);
             log.info(out);
 
-            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("SREGISTROS");
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_RECORDSET");
             log.info("Length of retrieved batches from database = "+recordset);
 
             List<Debt> debts = new ArrayList<>();
@@ -49,17 +48,145 @@ public class StudentRepository {
 
                 Debt debt = new Debt();
                 debt.setConcept((String)record.get("CONCEPTO"));
-                debt.setExpiration((record.get("FECVENCIMIENTO")!=null)?new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").format((Date) record.get("FECVENCIMIENTO")):null);
-                debt.setExpired(false);
-                debt.setCurrency((String)record.get("MONEDA"));
-                debt.setBalance((record.get("SALDO")!=null)?((BigDecimal)record.get("SALDO")).doubleValue():null);
-                debt.setArrears((record.get("MORA")!=null)?((BigDecimal)record.get("MORA")).doubleValue():null);
+                debt.setExpiration(record.get("FECVENCIMIENTO")!=null?(String)record.get("FECVENCIMIENTO"):null);
+                debt.setExpired((record.get("EXPIRADO")!=null && ((BigDecimal)record.get("EXPIRADO")).intValue() == 1));
+                debt.setBalance((record.get("SALDO")!=null)?(String)record.get("SALDO"):null);
+                debt.setArrears((record.get("MORA")!=null)?(String)record.get("MORA"):null);
                 debts.add(debt);
+
             }
 
             log.info("debts: " + debts);
 
             return debts;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<Pay> getPays(Integer id) throws Exception {
+        log.info("id: "+id);
+        try {
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("FINANZAS_PAGOSXALUMNO");
+
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("E_C_CODALUMNO", id);
+
+            Map<String, Object> out = simpleJdbcCall.execute(in);
+            log.info(out);
+
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<Pay> pays = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+
+                Pay pay = new Pay();
+                pay.setConcept(record.get("DETALLE")!=null?(String)record.get("DETALLE"):null);
+                pay.setDate(record.get("FECEMISION")!=null?(String)record.get("FECEMISION"):null);
+                pay.setAmount(record.get("IMPORTE")!=null?(String)record.get("IMPORTE"):null);
+                pay.setVoucher(record.get("COMPROBANTE")!=null?(String)record.get("COMPROBANTE"):null);
+                pays.add(pay);
+            }
+
+            log.info("pays: " + pays);
+
+            return pays;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public Credit getCredits(Integer id) throws Exception {
+        log.info("id: "+id);
+        try {
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("FINANZAS_CREDITOSXALUMNO");
+
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("E_C_CODALUMNO", id);
+
+            Map<String, Object> out = simpleJdbcCall.execute(in);
+            log.info(out);
+
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_INFO_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            Credit credit = null;
+
+            for(Map<String, Object> record : recordset) {
+
+                credit = new Credit();
+                credit.setStartdate(record.get("FECINICIO")!=null?(String)record.get("FECINICIO"):null);
+                credit.setEnddate(record.get("FECFIN")!=null?(String)record.get("FECFIN"):null);
+
+                credit.setAssigned("S/" + (record.get("OTORGADO")!=null?((BigDecimal)record.get("OTORGADO")).doubleValue():null));
+                credit.setAjusted("S/" + (record.get("AJUSTADO")!=null?((BigDecimal)record.get("AJUSTADO")).doubleValue():null));
+                credit.setPaid( "S/" + (record.get("TOTABONO")!=null?((BigDecimal)record.get("TOTABONO")).doubleValue():null));
+
+                double assigned = record.get("OTORGADO")!=null?((BigDecimal)record.get("OTORGADO")).doubleValue():0;
+                double ajusted = record.get("AJUSTADO")!=null?((BigDecimal)record.get("AJUSTADO")).doubleValue():0;
+                double paid = record.get("TOTABONO")!=null?((BigDecimal)record.get("TOTABONO")).doubleValue():0;
+                double balance = assigned + ajusted - paid;
+
+                credit.setBalance( "S/" + balance);
+
+                if(record.get("CUOTAMENSUAL")!=null && balance > 0)
+                    credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: S/" + ((BigDecimal)record.get("CUOTAMENSUAL")).doubleValue());
+
+                break;
+            }
+
+            if(credit == null)
+                throw new Exception("No existe información de crédito educativo");
+
+            // Deudas Credito
+
+            recordset = (ArrayList<Map<String, Object>>) out.get("S_C_DEUDAS_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<Debt> debts = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+                Debt debt = new Debt();
+                debt.setConcept(record.get("CONCEPTO")!=null?(String)record.get("CONCEPTO"):null);
+                debt.setExpiration(record.get("FECVENCIMIENTO")!=null?(String)record.get("FECVENCIMIENTO"):null);
+                debt.setExpired(record.get("EXPIRADO")!=null && ((BigDecimal)record.get("EXPIRADO")).intValue()==1);
+                debt.setBalance(record.get("CARGO")!=null?(String)record.get("CARGO"):null);
+
+                debts.add(debt);
+            }
+
+            credit.setDebts(debts);
+
+            // Pagos Credito
+
+            recordset = (ArrayList<Map<String, Object>>) out.get("S_C_PAGOS_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<Pay> pays = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+                Pay pay = new Pay();
+                pay.setConcept(record.get("CONCEPTO")!=null?(String)record.get("CONCEPTO"):null);
+                pay.setDate(record.get("FECEMISION")!=null?(String)record.get("FECEMISION"):null);
+                pay.setAmount(record.get("ABONO")!=null?(String)record.get("ABONO"):null);
+                pay.setVoucher(record.get("NUMDOCCOMERCIAL")!=null?(String)record.get("NUMDOCCOMERCIAL"):null);
+
+                pays.add(pay);
+            }
+
+            credit.setPays(pays);
+
+            log.info("credit: " + credit);
+
+            return credit;
         }catch (Exception e){
             log.error(e, e);
             throw e;
@@ -103,7 +230,7 @@ public class StudentRepository {
                 event.setType(record.get("tiposesion")!=null?(String)record.get("tiposesion"):null);
                 event.setFrequency(record.get("tiposemana")!=null?(String)record.get("tiposemana"):null);
                 event.setTopic(record.get("unidad")!=null?(String)record.get("unidad"):null);
-                event.setColor(palette.getRandomColor(record.get("codcurso")!=null?((BigDecimal)record.get("codcurso")).intValue():null));
+                event.setColor(palette.getColor(record.get("codcurso")!=null?((BigDecimal)record.get("codcurso")).intValue():null));
 
                 events.add(event);
             }
@@ -395,6 +522,100 @@ public class StudentRepository {
             log.info("items: " + items);
 
             return items;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public History getHistory(Integer id) throws Exception {
+        log.info("id: "+id);
+        try {
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("HISTORIALXALUMNO");
+
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("E_C_CODALUMNO", id);
+
+            Map<String, Object> out = simpleJdbcCall.execute(in);
+            log.info(out);
+
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_INFO_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            History history = null;
+
+            for(Map<String, Object> record : recordset) {
+                history = new History();
+                history.setIdstudent(record.get("codalumno")!=null?((BigDecimal)record.get("codalumno")).longValue():null);
+                history.setFullname(record.get("nomalumno")!=null?((String)record.get("nomalumno")):null);
+                history.setIdcareer(record.get("codespecialidad")!=null?((BigDecimal)record.get("codespecialidad")).intValue():null);
+                history.setCareer(record.get("nomespecialidad")!=null?((String)record.get("nomespecialidad")):null);
+                history.setAverrage(record.get("promedio")!=null?((BigDecimal)record.get("promedio")).doubleValue():null);
+                history.setRanking(record.get("puesto")!=null?((BigDecimal)record.get("puesto")).intValue():null);
+                history.setStatus(record.get("ranking")!=null?((String)record.get("ranking")):null);
+
+                break;
+            }
+
+            if(history == null)
+                throw new Exception("No existe datos históricos");
+
+            // Get Terms
+
+            recordset = (ArrayList<Map<String, Object>>) out.get("S_C_SEMESTRES_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<History.Cycle> cycles = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+                History.Cycle cycle = new History.Cycle();
+                cycle.setName(record.get("ciclo")!=null?((String)record.get("ciclo")):null);
+                cycle.setIdterm(record.get("codperiodo")!=null?((BigDecimal)record.get("codperiodo")).intValue():null);
+                cycle.setTerm(record.get("nomperiodo")!=null?((String)record.get("nomperiodo")):null);
+                cycle.setAverrage(record.get("promedio")!=null?((BigDecimal)record.get("promedio")).doubleValue():null);
+
+                cycles.add(cycle);
+            }
+
+            history.setCycles(cycles);
+
+            // Get Courses X Cycle
+
+            for (History.Cycle cycle :  history.getCycles()){
+
+                simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+                simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("CURSOSXALUMNO");
+
+                in = new MapSqlParameterSource()
+                        .addValue("E_C_CODALUMNO", id)
+                        .addValue("E_C_CODPERIODO", cycle.getIdterm());
+
+                out = simpleJdbcCall.execute(in);
+                log.info(out);
+
+                recordset = (ArrayList<Map<String, Object>>) out.get("S_C_RECORDSET");
+                log.info("Length of retrieved batches from database = "+recordset);
+
+                List<History.Course> courses = new ArrayList<>();
+
+                for(Map<String, Object> record : recordset) {
+                    History.Course course = new History.Course();
+                    course.setName(record.get("nomcurso")!=null?((String)record.get("nomcurso")):null);
+                    course.setScore(record.get("notapromedio")!=null?((BigDecimal)record.get("notapromedio")).doubleValue():null);
+
+                    courses.add(course);
+                }
+
+                cycle.setCourses(courses);
+
+            }
+
+            log.info("history: " + history);
+
+            return history;
         }catch (Exception e){
             log.error(e, e);
             throw e;

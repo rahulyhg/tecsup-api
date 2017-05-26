@@ -1,4 +1,4 @@
-package pe.edu.tecsup.api.controllers;
+package pe.edu.tecsup.api.controllers.api;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,7 @@ public class StudentController {
         log.info("call getPays: user:" + user);
         try {
 
-            List<Pay> pays = new ArrayList<>();
+            List<Pay> pays = studentervice.getPays(user.getId());
             log.info("pays: " + pays);
 
             return ResponseEntity.ok(pays);
@@ -59,9 +59,7 @@ public class StudentController {
         log.info("call getCredits: user:" + user);
         try {
 
-            Credit credit = new Credit();
-            credit.setDebts(new ArrayList<Debt>());
-            credit.setPays(new ArrayList<Pay>());
+            Credit credit = studentervice.getCredits(user.getId());
             log.info("credit: " + credit);
 
             return ResponseEntity.ok(credit);
@@ -133,6 +131,21 @@ public class StudentController {
             log.info("attendance: " + attendance);
 
             return ResponseEntity.ok(attendance);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("history")
+    public ResponseEntity<?> getHistory(@AuthenticationPrincipal User user) throws Exception{
+        log.info("call getHistory: user:" + user);
+        try {
+
+            History history = studentervice.getHistory(user.getId());
+            log.info("history: " + history);
+
+            return ResponseEntity.ok(history);
         }catch (Throwable e){
             log.error(e, e);
             throw e;

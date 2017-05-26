@@ -1,4 +1,4 @@
-# Tecsup CRM Integration Module
+# Tecsup API RESTful Module
 
-### TLSv1.1 Support with JAVA_OPTS config
--Dsoapui.https.protocols=TLSv1.1,TLSv1.2
+### Configuration
+* Modify application.properties

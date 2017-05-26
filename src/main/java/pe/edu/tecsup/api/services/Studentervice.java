@@ -21,6 +21,16 @@ public class Studentervice {
 		return studentRepository.getDebts(id);
 	}
 
+    public List<Pay> getPays(Integer id) throws Exception {
+		log.info("calling getPays: " + id);
+		return studentRepository.getPays(id);
+	}
+
+    public Credit getCredits(Integer id) throws Exception {
+		log.info("calling getCredits: " + id);
+		return studentRepository.getCredits(id);
+	}
+
 	public List<Event> getEvents(Integer id) throws Exception {
 		log.info("calling getEvents: " + id);
 		return studentRepository.getEvents(id);
@@ -39,6 +49,11 @@ public class Studentervice {
     public Attendance getAttendance(Integer id, Integer idcourse) throws Exception {
         log.info("calling getAttendance: " + id + " - " + idcourse);
         return studentRepository.getAttendanceMaster(id, idcourse);
+    }
+
+    public History getHistory(Integer id) throws Exception {
+        log.info("calling getHistory: " + id);
+        return studentRepository.getHistory(id);
     }
 
 }

@@ -11,11 +11,9 @@ public class Debt {
 
     private Boolean expired;
 
-    private String currency;
+    private String balance;
 
-    private Double balance;
-
-    private Double arrears;
+    private String arrears;
 
     public String getConcept() {
         return concept;
@@ -41,27 +39,19 @@ public class Debt {
         this.expired = expired;
     }
 
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public Double getBalance() {
+    public String getBalance() {
         return balance;
     }
 
-    public void setBalance(Double balance) {
+    public void setBalance(String balance) {
         this.balance = balance;
     }
 
-    public Double getArrears() {
+    public String getArrears() {
         return arrears;
     }
 
-    public void setArrears(Double arrears) {
+    public void setArrears(String arrears) {
         this.arrears = arrears;
     }
 
@@ -71,9 +61,8 @@ public class Debt {
                 "concept='" + concept + '\'' +
                 ", expiration='" + expiration + '\'' +
                 ", expired=" + expired +
-                ", currency='" + currency + '\'' +
-                ", balance=" + balance +
-                ", arrears=" + arrears +
+                ", balance='" + balance + '\'' +
+                ", arrears='" + arrears + '\'' +
                 '}';
     }
 }
