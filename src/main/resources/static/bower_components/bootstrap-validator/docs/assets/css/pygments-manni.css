@@ -58,7 +58,7 @@
 .bp { color: #336666 } /* Name.Builtin.Pseudo */
 .vc { color: #003333 } /* Name.Variable.Class */
 .vg { color: #003333 } /* Name.Variable.Global */
-.vi { color: #003333 } /* Name.Variable.Instance */
+.vi { color: #003333 } /* Name.Variable.Device */
 .il { color: #FF6600 } /* Literal.Number.Integer.Long */
 
 .css .o,

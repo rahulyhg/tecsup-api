@@ -219,4 +219,89 @@ public class UserRepository {
         }
     }
 
+    public void saveAccess(Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
+        log.info("saveAccess: userid:" + userid + " - instanceid:" + instanceid + " - token:" + token+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
+        try {
+            /**
+             * Instances
+             */
+            // Update instance if exists
+            String sql = "UPDATE API_INSTANCES SET APP=?, LASTUSERID=?, LASTDATE=SYSDATE, STATUS=1, DEVICEID=?, MANUFACTURER=?, MODEL=?, DEVICE=?, KERNEL=?, VERSION=?, SDK=? WHERE INSTANCEID=?";
+
+            int updateds = jdbcTemplate.update(sql, "TECSUP", userid, deviceid, manufacturer, model, device, kernel, version, sdk, instanceid);
+            log.info("Instances: Rows updateds: " + updateds);
+
+            if(updateds == 0){
+                // Insert a new instance
+                sql = "INSERT INTO API_INSTANCES (INSTANCEID, APP, LASTUSERID, LASTDATE, STATUS, DEVICEID, MANUFACTURER, MODEL, DEVICE, KERNEL, VERSION, SDK) " +
+                        "VALUES(?, ?, ?, SYSDATE, 1, ?, ?, ?, ?, ?, ?, ?)";
+
+                int inserteds = jdbcTemplate.update(sql, instanceid, "TECSUP", userid, deviceid, manufacturer, model, device, kernel, version, sdk);
+                log.info("Instances: Rows inserteds: " + inserteds);
+            }
+
+            // Unique instance by device
+            sql = "UPDATE API_INSTANCES SET STATUS=0 WHERE INSTANCEID!=? AND DEVICEID=?";
+
+            int disableds = jdbcTemplate.update(sql, instanceid, deviceid);
+            log.info("Instances: Rows disableds: " + disableds);
+
+            /**
+             * Tokens
+             */
+            // Update token if exists
+            sql = "UPDATE API_TOKENS SET INSTANCEID=?, USERID=?, LASTDATE=SYSDATE, STATUS=1 WHERE TOKENID=?";
+
+            updateds = jdbcTemplate.update(sql, instanceid, userid, token);
+            log.info("Tokens: Rows updateds: " + updateds);
+
+            if(updateds == 0){
+                // Insert a new token
+                sql = "INSERT INTO API_TOKENS (TOKENID, INSTANCEID, USERID, LASTDATE, STATUS) " +
+                        "VALUES(?, ?, ?, SYSDATE, 1)";
+
+                int inserteds = jdbcTemplate.update(sql, token, instanceid, userid);
+                log.info("Tokens: Rows inserteds: " + inserteds);
+            }
+
+            // Unique token by instance
+            sql = "UPDATE API_TOKENS SET STATUS=0 WHERE TOKENID!=? AND INSTANCEID=?";
+
+            disableds = jdbcTemplate.update(sql, token, instanceid);
+            log.info("Tokens: Rows disableds: " + disableds);
+
+            log.info("saveAccess COMPLETED!");
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public void destroyToken(String token) throws Exception {
+        log.info("saveAccess: token:" + token);
+        try {
+            String sql = "UPDATE API_TOKENS SET STATUS=0 WHERE TOKENID=?";
+
+            jdbcTemplate.update(sql, token);
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public void updateToken(String token) throws Exception {
+        log.info("updateToken: token:" + token);
+        try {
+            String sql = "UPDATE API_TOKENS SET LASTDATE=SYSDATE WHERE TOKENID=?";
+
+            jdbcTemplate.update(sql, token);
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
 }

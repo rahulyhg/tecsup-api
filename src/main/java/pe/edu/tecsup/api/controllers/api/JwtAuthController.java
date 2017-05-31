@@ -13,11 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.tecsup.api.models.User;
-import pe.edu.tecsup.api.services.UserService;
 import pe.edu.tecsup.api.services.JwtTokenService;
+import pe.edu.tecsup.api.services.UserService;
 import pe.edu.tecsup.api.utils.Constant;
 
 import java.util.Arrays;
@@ -101,8 +102,9 @@ public class JwtAuthController {
 
 
     @PostMapping("google_access_token")
-    public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String gtoken, @RequestParam String instance) throws Exception {
-        log.info("call createGoogleAuthenticationToken: t:"+gtoken+" - i:"+instance);
+    public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String gtoken, @RequestParam String instanceid,
+                                                             @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+        log.info("call createGoogleAuthenticationToken: t:"+gtoken+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
             // Attempt to verify the Google Token
@@ -153,7 +155,7 @@ public class JwtAuthController {
             user.setToken(token);
 
             // Updating instance in db
-            // userService.update(email, instance) ...
+            userService.saveAccess(user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
 
             log.info(user);
 
@@ -167,8 +169,9 @@ public class JwtAuthController {
     }
 
     @PostMapping("hacked_access_token")
-    public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String instance) throws Exception {
-        log.info("call createHackedAuthenticationToken: u:"+username+" - i:"+instance);
+    public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String instanceid,
+                                                             @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+        log.info("call createHackedAuthenticationToken: u:"+username+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
             // Verificando si se encuentra registrado el usuario
@@ -187,11 +190,26 @@ public class JwtAuthController {
             user.setToken(token);
 
             // Updating instance in db
-            // userService.update(email, instance) ...
+            userService.saveAccess(user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
 
             log.info(user);
 
             // Return the token
+            return ResponseEntity.ok(user);
+
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @DeleteMapping("destroy_token")
+    public ResponseEntity<?> destroyToken(@RequestHeader(value="Authorization") String token, @AuthenticationPrincipal User user) throws Exception {
+        log.info("call destroyToken: user:"+user+" - token:"+token);
+        try {
+
+            userService.destroyToken(token);
+
             return ResponseEntity.ok(user);
 
         }catch (Throwable e){

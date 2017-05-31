@@ -2,6 +2,7 @@ package pe.edu.tecsup.api.controllers.api;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -61,6 +62,9 @@ public class StudentController {
 
             Credit credit = studentervice.getCredits(user.getId());
             log.info("credit: " + credit);
+
+            if(credit == null)
+                return new ResponseEntity<Object> (HttpStatus.NO_CONTENT);
 
             return ResponseEntity.ok(credit);
         }catch (Throwable e){

@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.repositories.UserRepository;
 
+import javax.transaction.Transactional;
+
 @Service
 public class UserService {
 
@@ -34,6 +36,22 @@ public class UserService {
     public byte[] loadThumbedUserPicture(Integer id) throws Exception {
         log.info("calling loadThumbedUserPicture: " + id);
         return userDao.loadThumbedUserPicture(id);
+    }
+
+    @Transactional
+    public void saveAccess(Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
+		log.info("calling saveAccess: " + userid + " - instanceid:" + instanceid + " - token:" + token);
+		userDao.saveAccess(userid, instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+    }
+
+    public void destroyToken(String token) throws Exception {
+        log.info("calling destroyToken: " + token);
+        userDao.destroyToken(token);
+    }
+
+    public void updateToken(String token) throws Exception {
+        log.info("calling updateToken: " + token);
+        userDao.updateToken(token);
     }
 
 }

@@ -52,6 +52,13 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
                 String username = jwtTokenService.parseToken(authToken, true);
                 log.info("checking authentication for user " + username);
 
+                // Update lastdate token
+                try {
+                    userService.updateToken(authToken);
+                }catch (Exception e){
+                    log.error(e, e);
+                }
+
                 User user = userService.loadUserByUsername(username);
                 log.info("user " + user);
 

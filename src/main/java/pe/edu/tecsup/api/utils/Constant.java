@@ -1,8 +1,5 @@
 package pe.edu.tecsup.api.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Constant {
 
     public static final String[] GOOGLEPLUS_ALLOW_DOMAINS = {"tecsup.edu.pe"};

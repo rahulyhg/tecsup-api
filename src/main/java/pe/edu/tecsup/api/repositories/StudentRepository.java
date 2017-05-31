@@ -143,8 +143,10 @@ public class StudentRepository {
                 break;
             }
 
-            if(credit == null)
-                throw new Exception("No existe información de crédito educativo");
+            if(credit == null) {
+                log.info("No existe información de crédito educativo");
+                return null;
+            }
 
             // Deudas Credito
 
@@ -605,6 +607,7 @@ public class StudentRepository {
                     History.Course course = new History.Course();
                     course.setName(record.get("nomcurso")!=null?((String)record.get("nomcurso")):null);
                     course.setScore(record.get("notapromedio")!=null?((BigDecimal)record.get("notapromedio")).doubleValue():null);
+                    course.setStatus(record.get("estadopromedio")!=null?((BigDecimal)record.get("estadopromedio")).doubleValue()==1:null);
 
                     courses.add(course);
                 }
