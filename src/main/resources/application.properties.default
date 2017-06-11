@@ -18,6 +18,7 @@ spring.datasource.password=tecsup
 
 # Google API
 gapi.clientid=123456.apps.googleusercontent.com
+fcm.serverkey=AAAA******************************************************************************************************gymG
 
 # JWT ${random.value}
 jwt.secret=mysecret
@@ -41,3 +42,10 @@ logging.level.org.springframework.ldap=DEBUG
 logging.level.org.springframework.jdbc.core.JdbcTemplate=DEBUG
 logging.level.org.springframework.orm.hibernate3.HibernateTransactionManager=DEBUG
 logging.level.org.springframework.security=DEBUG
+
+#Email
+spring.mail.host=smtp.gmail.com
+spring.mail.username=username@tecsup.edu.pe
+spring.mail.password=tecsup
+spring.mail.port=465
+spring.mail.properties.mail.smtp.ssl.enable=true

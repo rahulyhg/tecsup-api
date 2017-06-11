@@ -21,4 +21,10 @@ public class Constant {
     public static final int ROL_SEVA_ESTUDIANTE_ANTIGUO = 45; // SEVA - Estudiante Antiguo
     public static final int ROL_SEVA_JEFE_DEPARTAMENTO = 146; // SEVA - JefedeDepartamento
 
+    public static final String EMAIL_FROM = "campus@tecsup.edu.pe";
+    public static final String EMAIL_ADMINISTRATOR = "ebenites@tecsup.edu.pe";
+
+    public static final String FIREBASE_PAYLOAD_GO = "GO";
+    public static final String FIREBASE_PAYLOAD_GO_DEBT = "DEBT";
+
 }

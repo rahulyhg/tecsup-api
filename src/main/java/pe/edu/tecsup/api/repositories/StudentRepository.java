@@ -126,19 +126,13 @@ public class StudentRepository {
                 credit.setStartdate(record.get("FECINICIO")!=null?(String)record.get("FECINICIO"):null);
                 credit.setEnddate(record.get("FECFIN")!=null?(String)record.get("FECFIN"):null);
 
-                credit.setAssigned("S/" + (record.get("OTORGADO")!=null?((BigDecimal)record.get("OTORGADO")).doubleValue():null));
-                credit.setAjusted("S/" + (record.get("AJUSTADO")!=null?((BigDecimal)record.get("AJUSTADO")).doubleValue():null));
-                credit.setPaid( "S/" + (record.get("TOTABONO")!=null?((BigDecimal)record.get("TOTABONO")).doubleValue():null));
+                credit.setAssigned(record.get("OTORGADO")!=null?(String)record.get("OTORGADO"):null);
+                credit.setAjusted(record.get("AJUSTADO")!=null?(String)record.get("AJUSTADO"):null);
+                credit.setPaid(record.get("TOTABONO")!=null?(String)record.get("TOTABONO"):null);
+                credit.setBalance(record.get("SALDO")!=null?(String)record.get("SALDO"):null);
 
-                double assigned = record.get("OTORGADO")!=null?((BigDecimal)record.get("OTORGADO")).doubleValue():0;
-                double ajusted = record.get("AJUSTADO")!=null?((BigDecimal)record.get("AJUSTADO")).doubleValue():0;
-                double paid = record.get("TOTABONO")!=null?((BigDecimal)record.get("TOTABONO")).doubleValue():0;
-                double balance = assigned + ajusted - paid;
-
-                credit.setBalance( "S/" + balance);
-
-                if(record.get("CUOTAMENSUAL")!=null && balance > 0)
-                    credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: S/" + ((BigDecimal)record.get("CUOTAMENSUAL")).doubleValue());
+                if(record.get("FECINICIO")!=null && record.get("FECFIN")!=null && record.get("CUOTAMENSUAL")!=null)
+                    credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: S/" + record.get("CUOTAMENSUAL"));
 
                 break;
             }
@@ -354,7 +348,7 @@ public class StudentRepository {
                     mobileScore += score.getFinalScore() * score.getFinalWeight() / 100;
                 }
 
-                score.setScore(mobileScore);
+                score.setScore(Math.round(mobileScore*100d)/100d);
                 score.setFormula(record.get("formula")!=null?(String)record.get("formula"):null);
 
                 // Theos
@@ -619,6 +613,36 @@ public class StudentRepository {
             log.info("history: " + history);
 
             return history;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<String> getDebtorInstancesDealy() throws Exception {
+        log.info("");
+        try {
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("FINANZAS_DEUDASXDIA");
+
+            SqlParameterSource in = new MapSqlParameterSource();
+
+            Map<String, Object> out = simpleJdbcCall.execute(in);
+            log.info(out);
+
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_RECORDSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<String> instances = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+                instances.add( record.get("INSTANCEID")!=null?(String)record.get("INSTANCEID"):null );
+            }
+
+            log.info("instances: " + instances);
+
+            return instances;
         }catch (Exception e){
             log.error(e, e);
             throw e;

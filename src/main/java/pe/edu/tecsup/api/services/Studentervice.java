@@ -56,4 +56,9 @@ public class Studentervice {
         return studentRepository.getHistory(id);
     }
 
+    public List<String> getDebtorInstancesDealy() throws Exception {
+        log.info("calling getDebtorInstancesDealy: ");
+        return studentRepository.getDebtorInstancesDealy();
+    }
+
 }

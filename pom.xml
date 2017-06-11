@@ -150,7 +150,16 @@
             <version>3.4.1</version>
         </dependency>
 
-		<!-- ORACLE database driver -->
+
+		<!-- Firebase Cloud Messaging Client -->
+        <dependency>
+            <groupId>com.liferay.mobile</groupId>
+            <artifactId>fcm-client</artifactId>
+            <version>0.3.0</version>
+        </dependency>
+
+
+        <!-- ORACLE database driver -->
 
 		<dependency>
 			<groupId>com.oracle</groupId>
