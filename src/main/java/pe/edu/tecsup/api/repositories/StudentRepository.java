@@ -132,7 +132,7 @@ public class StudentRepository {
                 credit.setBalance(record.get("SALDO")!=null?(String)record.get("SALDO"):null);
 
                 if(record.get("FECINICIO")!=null && record.get("FECFIN")!=null && record.get("CUOTAMENSUAL")!=null)
-                    credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: S/" + record.get("CUOTAMENSUAL"));
+                    credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: " + record.get("CUOTAMENSUAL"));
 
                 break;
             }

@@ -1,27 +1,31 @@
-# = DATA SOURCE - Production
-#spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
-#spring.datasource.url=jdbc:oracle:thin:@127.0.0.1:1521:xe
-#spring.datasource.username=tecsup
-#spring.datasource.password=tecsup
-
-# = DATA SOURCE - Development
-#spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
-#spring.datasource.url=jdbc:oracle:thin:@127.0.0.1:1521:xe
-#spring.datasource.username=tecsup
-#spring.datasource.password=tecsup
-
-# = DATA SOURCE - Cloud
+# = DATA SOURCE
 spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
-spring.datasource.url=jdbc:oracle:thin:@127.0.0.1:1521:xe
-spring.datasource.username=tecsup
-spring.datasource.password=tecsup
+spring.datasource.tomcat.max-wait=30000
+spring.datasource.tomcat.max-active=300
+spring.datasource.tomcat.max-idle=100
+spring.datasource.tomcat.min-idle=30
 
-# Google API
-gapi.clientid=123456.apps.googleusercontent.com
-fcm.serverkey=AAAA******************************************************************************************************gymG
+# - Production
+#spring.datasource.url=jdbc:oracle:thin:@192.168.72.12:1521:bdtecsup
+#spring.datasource.username=docencia
+#spring.datasource.password=docencia
 
-# JWT ${random.value}
-jwt.secret=mysecret
+# - Development
+#spring.datasource.url=jdbc:oracle:thin:@192.168.200.30:1521:bdtecsup
+#spring.datasource.username=comercial
+#spring.datasource.password=comercial
+
+# - Cloud
+spring.datasource.url=jdbc:oracle:thin:@130.211.164.31:1521:bdtecsup
+spring.datasource.username=docencia
+spring.datasource.password=docencia
+
+# = Google API
+gapi.clientid=****************************************************************.apps.googleusercontent.com
+fcm.serverkey=A********************************************************************************************************************************ymG
+
+# = JWT ${random.value}
+jwt.secret=secret
 jwt.expiration=604800
 
 # = JPA / HIBERNATE
@@ -32,7 +36,7 @@ spring.jpa.database-platform=org.hibernate.dialect.Oracle10gDialect
 spring.thymeleaf.mode=LEGACYHTML5
 spring.thymeleaf.cache=false
 
-# Logging
+# = Logging
 logging.file=${catalina.base}/logs/tecsup-api.log
 logging.level.*=INFO
 logging.level.pe.edu.tecsup=DEBUG
@@ -43,9 +47,13 @@ logging.level.org.springframework.jdbc.core.JdbcTemplate=DEBUG
 logging.level.org.springframework.orm.hibernate3.HibernateTransactionManager=DEBUG
 logging.level.org.springframework.security=DEBUG
 
-#Email
+# = Email
 spring.mail.host=smtp.gmail.com
-spring.mail.username=username@tecsup.edu.pe
-spring.mail.password=tecsup
+spring.mail.username=******@tecsup.edu.pe
+spring.mail.password=********
 spring.mail.port=465
 spring.mail.properties.mail.smtp.ssl.enable=true
+
+# = FileUpload
+spring.http.multipart.max-file-size=10MB
+spring.http.multipart.max-request-size=10MB

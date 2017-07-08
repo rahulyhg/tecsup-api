@@ -1,0 +1,13 @@
+{
+  "name": "autolink_4.7.0",
+  "_cacheHeaders": {
+    "Last-Modified": "Thu, 25 May 2017 16:39:56 GMT",
+    "Content-Length": "856",
+    "Content-Type": "application/zip"
+  },
+  "main": "index.js",
+  "_source": "http://download.ckeditor.com/autolink/releases/autolink_4.7.0.zip",
+  "_target": "*",
+  "_originalSource": "http://download.ckeditor.com/autolink/releases/autolink_4.7.0.zip",
+  "_direct": true
+}

@@ -2,8 +2,6 @@ package pe.edu.tecsup.api.controllers.api;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,9 +47,7 @@ public class UserController {
             log.info("User picture bytes: " + media.length);
 
 //            return ResponseEntity.ok(media);
-            final HttpHeaders httpHeaders= new HttpHeaders();
-            httpHeaders.setContentType(MediaType.IMAGE_JPEG);
-            return new ResponseEntity<>(media, httpHeaders, HttpStatus.OK);
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(media);
 
         }catch (Throwable e){
             log.error(e, e);

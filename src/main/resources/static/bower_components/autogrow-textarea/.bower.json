@@ -1,0 +1,18 @@
+{
+  "name": "autogrow-textarea",
+  "main": "jquery.autogrowtextarea.js",
+  "dependencies": {
+    "jquery": ">=1.8"
+  },
+  "homepage": "https://github.com/jevin/Autogrow-Textarea",
+  "_release": "ff8dcf2489",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "ff8dcf24893844ded1914693deabe34c7abc55db"
+  },
+  "_source": "https://github.com/jevin/Autogrow-Textarea.git",
+  "_target": "*",
+  "_originalSource": "autogrow-textarea",
+  "_direct": true
+}

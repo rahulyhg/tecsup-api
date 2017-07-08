@@ -79,4 +79,16 @@ public class ScheduledTask {
         }
     }
 
+    @Scheduled(cron="0 0 * * * *")
+    public void processingWeatherUpdating() {
+        log.info("processingWeatherUpdating ...");
+        try {
+
+
+
+        }catch (Exception e){
+            log.error(e, e);
+            mailer.sendMailToAdministrator("ERROR en ScheduledTask:processingWeatherUpdating", e.toString());
+        }
+    }
 }

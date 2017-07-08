@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/default">
+<head>
+    <title>Template Action</title>
+    <script type="text/javascript" th:inline="javascript">
+        /*<![CDATA[*/
+        $(function(){
+            $('#summary').autoGrow();
+
+        })
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <ol class="breadcrumb">
+            <li><a href="" th:href="@{/home/}">Inicio</a></li>
+            <li><a href="" th:href="@{/admin/news/}">Gestor de Noticias</a></li>
+            <li class="active">Editar Noticia</li>
+        </ol>
+
+        <form th:action="@{/admin/news/update}" method="post" enctype="multipart/form-data" th:object="${neu}">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">Nueva Noticia</h2>
+                </div>
+                <div class="panel-body">
+
+                    <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}">
+                        <p th:each="error : ${#fields.errors('*')}" th:text="${error}"></p>
+                    </div>
+
+                    <input type="hidden" name="id" th:field="*{id}">
+
+                    <div class="form-group">
+                        <label for="title">Título</label>
+                        <input type="text" id="title" name="title" th:field="*{title}" class="form-control" maxlength="100" required="">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="summary">Resumen</label>
+                        <textarea id="summary" name="summary" th:field="*{summary}" class="form-control" maxlength="500" rows="2" required=""></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="file">Imagen Portada</label>
+                        <input type="file" id="file" name="file" class="form-control file" data-language="es" data-show-upload="false" data-allowed-file-extensions="[&quot;jpeg&quot;, &quot;jpg&quot;, &quot;png&quot;]">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="content">Contenido</label>
+                        <textarea id="content" name="content" th:field="*{content}" class="form-control ckeditor" required=""></textarea>
+                    </div>
+
+                </div>
+                <div class="panel-footer">
+                    <input type="submit" class="btn btn-primary" value="Guardar">
+                </div>
+            </div>
+        </form>
+
+    </div>
+</body>
+</html>

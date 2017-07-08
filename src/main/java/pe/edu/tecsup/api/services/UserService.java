@@ -49,7 +49,7 @@ public class UserService {
         userDao.destroyToken(token);
     }
 
-    public void updateToken(String token) throws Exception {
+    public void updateToken(String token) {
         log.info("calling updateToken: " + token);
         userDao.updateToken(token);
     }

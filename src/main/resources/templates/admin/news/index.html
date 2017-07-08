@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/default">
+<head>
+    <title>Template Action</title>
+    <script type="text/javascript" th:inline="javascript">
+        /*<![CDATA[*/
+        $(function(){
+            $('a.colorbox').colorbox();
+
+            $('input.activated').change(function() {
+                var id = $(this).val();
+                var status = $(this).prop('checked')?1:0;
+                var url = /*[[@{/admin/news/activate/}]]*/'';
+                $(this).bootstrapToggle('disable');
+                $.get(url + id + '/' + status, function (data) {
+                    //console.log(data);
+                    $('input.activated').bootstrapToggle('enable');
+                })
+            })
+        })
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <div layout:fragment="content">
+
+        <ol class="breadcrumb">
+            <li><a href="" th:href="@{/home/}">Inicio</a></li>
+            <li class="active">Gestor de Noticias</li>
+        </ol>
+
+        <div class="page-header">
+            <h2>Gestor de Noticias</h2>
+        </div>
+
+        <div class="alert alert-success" th:if="${message!=null}" th:text="${message}"></div>
+
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title">Registro de noticias</h2>
+            </div>
+            <div class="panel-body">
+                <a href="#" th:href="@{/admin/news/create}" class="btn btn-success">Nueva Noticia</a>
+            </div>
+            <table class="table" th:if="${!news.empty}">
+                <thead>
+                    <tr>
+                        <th width="64">ID</th>
+                        <th width="70"></th>
+                        <th>T&iacute;tulo/Contenido</th>
+                        <th width="100">Publicado</th>
+                        <th width="100">Estado</th>
+                        <th width="80" colspan="3">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="n : ${news}">
+                        <td th:text="${n.id}"></td>
+                        <td><a href="#" class="colorbox" th:href="@{/admin/news/files/} + ${n.picture}" th:target="_blank"><img src="http://lorempixel.com/64/64" th:src="@{/admin/news/files/} + ${n.picture}" width="64" height="64"></a></td>
+                        <td>
+                            <strong th:text="${n.title}"></strong><br/>
+                            <span th:text="${n.summary}"></span>
+                        </td>
+                        <td th:text="${#dates.format(n.published, 'dd/MM/yyyy')}"></td>
+                        <td><input class="activated" type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-on="Activo" data-off="Inactivo" th:checked="${n.activated}" th:value="${n.id}"></td>
+                        <td><a href="#" th:href="@{/admin/news/view/} + ${n.id}" class="btn btn-info"><i class="glyphicon glyphicon-eye-open"></i> Ver</a></td>
+                        <td><a href="#" th:href="@{/admin/news/edit/} + ${n.id}" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Editar</a></td>
+                        <td><a href="#" th:href="@{/admin/news/delete/} + ${n.id}" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Eliminar</a></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="panel-body" th:if="${news.empty}">
+                <div class="well text-center">No se encontró ningún registro</div>
+            </div>
+            <div class="panel-footer">
+
+                <ul class="pagination" th:with="url=@{/admin/news/?number=}" th:if="${page.totalPages > 0}">
+                    <li class="page-item" th:class="${page.first}?'disabled':''">
+                        <a class="page-link" href="#" aria-label="Previous" th:href="${url + 1}">
+                            <span aria-hidden="true">&laquo;</span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(1, page.totalPages)}" th:class="${page.number+1 eq i}?'active':''">
+                        <a class="page-link" href="#" th:href="${url + i}" th:text="${i}">1</a>
+                    </li>
+                    <li class="page-item" th:class="${page.last}?'disabled':''">
+                        <a class="page-link" href="#" aria-label="Next" th:href="${url + page.totalPages}">
+                            <span aria-hidden="true">&raquo;</span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

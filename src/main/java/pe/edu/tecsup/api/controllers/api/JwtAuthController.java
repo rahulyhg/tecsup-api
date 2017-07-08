@@ -66,27 +66,29 @@ public class JwtAuthController {
         }
     }
 
-    @PostMapping("refresh_token")
-    public ResponseEntity<?> refreshAndGetAuthenticationToken(@RequestParam String token) throws Exception{
-        log.info("call refreshAndGetAuthenticationToken: "+token);
-        try {
-            String username = jwtTokenService.parseToken(token, false);
-            log.info("Token: " + token);
-
-            User user = userService.loadUserByUsername(username);
-            log.info("User: " + user);
-
-            String refreshedToken = jwtTokenService.refreshToken(token);
-            log.info("Refreshed Token: " + refreshedToken);
-            user.setToken(refreshedToken);
-
-            return ResponseEntity.ok(user);
-
-        }catch (Throwable e){
-            log.error(e, e);
-            throw e;
-        }
-    }
+//    @GetMapping("refresh_token")
+//    public ResponseEntity<?> refreshAndGetAuthenticationToken(@RequestParam String token) throws Exception{
+//        log.info("call refreshAndGetAuthenticationToken: "+token);
+//        try {
+//            String username = jwtTokenService.parseToken(token);
+//            log.info("Token: " + token);
+//
+//            User user = userService.loadUserByUsername(username);
+//            log.info("User: " + user);
+//
+//            String refreshedToken = jwtTokenService.refreshToken(token);
+//            log.info("Refreshed Token: " + refreshedToken);
+//            user.setToken(refreshedToken);
+//
+//            //userService.refreshToken(token, refreshedToken);
+//
+//            return ResponseEntity.ok(user);
+//
+//        }catch (Throwable e){
+//            log.error(e, e);
+//            throw e;
+//        }
+//    }
 
     /**
      * Google Authentication Token
@@ -204,13 +206,13 @@ public class JwtAuthController {
     }
 
     @DeleteMapping("destroy_token")
-    public ResponseEntity<?> destroyToken(@RequestHeader(value="Authorization") String token, @AuthenticationPrincipal User user) throws Exception {
-        log.info("call destroyToken: user:"+user+" - token:"+token);
+    public ResponseEntity<?> destroyToken(@RequestParam String token) throws Exception {
+        log.info("call destroyToken: token:"+token);
         try {
 
             userService.destroyToken(token);
 
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok("Token destroyed!");
 
         }catch (Throwable e){
             log.error(e, e);

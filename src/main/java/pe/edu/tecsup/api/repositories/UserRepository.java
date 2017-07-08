@@ -23,7 +23,6 @@ import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -84,7 +83,7 @@ public class UserRepository {
             String sql = "SELECT U.CODSUJETO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(U.CODSUJETO) AS FULLNAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE \n" +
                         "FROM SEGURIDAD.SEG_USUARIO U \n" +
                         "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO \n" +
-                        "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO AND CODROL IN (143, 146)) \n" +
+                        "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO /*AND CODROL IN (132, 134, 143, 146)*/) \n" + // Admin, Secdoc, Docente, Jefe
                         "AND U.USUARIO = ? \n" +
                         "UNION ALL \n" +
                         "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
@@ -113,7 +112,28 @@ public class UserRepository {
                 public Role mapRow(ResultSet rs, int rowNum) throws SQLException {
                     Role role = new Role();
                     role.setId(rs.getInt("ID"));
-                    role.setName(rs.getString("NAME"));
+//                    role.setName(rs.getString("NAME"));
+                    switch (role.getId()){
+                        case Constant.ROLE_SEVA_ADMINISTRADOR:
+                            role.setName(Constant.AUTHORITY_SEVA_ADMINISTRADOR);
+                            break;
+                        case Constant.ROLE_SEVA_SECRETARIA:
+                            role.setName(Constant.AUTHORITY_SEVA_SECRETARIA);
+                            break;
+                        case Constant.ROLE_SEVA_DIRECTOR:
+                            role.setName(Constant.AUTHORITY_SEVA_DIRECTOR);
+                            break;
+                        case Constant.ROLE_SEVA_JEFE_DEPARTAMENTO:
+                            role.setName(Constant.AUTHORITY_SEVA_JEFE_DEPARTAMENTO);
+                            break;
+                        case Constant.ROLE_SEVA_DOCENTE:
+                            role.setName(Constant.AUTHORITY_SEVA_DOCENTE);
+                            break;
+                        case Constant.ROLE_SEVA_ESTUDIANTE:
+                        case Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO:
+                            role.setName(Constant.AUTHORITY_SEVA_ESTUDIANTE);
+                            break;
+                    }
                     return role;
                 }
             }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
@@ -121,10 +141,10 @@ public class UserRepository {
             user.setAuthorities(roles);
 
             // Default role
-            if(user.getAuthorities().contains(new Role(Constant.ROL_SEVA_DOCENTE)))
-                user.setRole(Constant.ROL_SEVA_DOCENTE);
-            else if(user.getAuthorities().contains(new Role(Constant.ROL_SEVA_ESTUDIANTE)) || user.getAuthorities().contains(new Role(Constant.ROL_SEVA_ESTUDIANTE_ANTIGUO)))
-                user.setRole(Constant.ROL_SEVA_ESTUDIANTE);
+            if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DOCENTE)))
+                user.setRole(Constant.ROLE_SEVA_DOCENTE);
+            else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE)) || user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO)))
+                user.setRole(Constant.ROLE_SEVA_ESTUDIANTE);
 
             log.info("User found: " + user);
 
@@ -291,16 +311,13 @@ public class UserRepository {
         }
     }
 
-    public void updateToken(String token) throws Exception {
+    public void updateToken(String token) {
         log.info("updateToken: token:" + token);
         try {
             String sql = "UPDATE API_TOKENS SET LASTDATE=SYSDATE WHERE TOKENID=?";
-
             jdbcTemplate.update(sql, token);
-
         }catch (Exception e){
             log.error(e, e);
-            throw e;
         }
     }
 

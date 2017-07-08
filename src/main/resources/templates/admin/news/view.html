@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorator="layouts/default">
+<head>
+    <title>Template Action</title>
+    <script type="text/javascript" th:inline="javascript">
+        /*<![CDATA[*/
+        $(function(){
+
+        })
+        /*]]>*/
+    </script>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <ol class="breadcrumb">
+            <li><a href="" th:href="@{/home/}">Inicio</a></li>
+            <li><a href="" th:href="@{/admin/news/}">Gestor de Noticias</a></li>
+            <li class="active">Ver Noticia</li>
+        </ol>
+
+        <div class="container">
+
+            <div class="page-header">
+                <h2 th:text="${neu.title}">Title</h2>
+                <p>
+                    Publicado por <i class="glyphicon glyphicon-user"></i> <span th:text="${neu.createdby}">ebenites</span> en <i class="glyphicon glyphicon-time"></i> <span th:text="${#dates.format(neu.published, 'dd/MM/yyyy')}">12/05/2017</span>
+                </p>
+            </div>
+
+            <img src="http://placehold.it/900x400" th:src="@{/admin/news/files/} + ${neu.picture}" alt="" class="img-responsive center-block">
+
+            <p class="lead" th:text="${neu.summary}">Summary</p>
+
+            <div th:utext="${neu.content}">Content</div>
+
+            <hr/>
+
+        </div>
+
+    </div>
+</body>
+</html>

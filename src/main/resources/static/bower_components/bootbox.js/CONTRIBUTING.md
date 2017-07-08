@@ -3,7 +3,7 @@
 **Please follow these basic steps to simplify pull request reviews - if you don't you'll probably just be asked to anyway.**
 
 * Please rebase your branch against the current master
-* Run ```npm install``` to make sure your development dependencies are up-to-date
+* Run ```npm install``` to make sure your development dependencies are up-to-published
 * [grunt-cli](https://github.com/gruntjs/grunt-cli) >= 0.4.0 is required to sanity check your contribution
 * Please ensure that the test suite passes **and** that bootbox.js is lint free before submitting a PR by running:
  * ```grunt```

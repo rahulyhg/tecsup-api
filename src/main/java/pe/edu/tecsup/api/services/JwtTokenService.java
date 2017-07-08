@@ -35,7 +35,7 @@ public class JwtTokenService implements Serializable {
     @Value("${jwt.expiration}")
     private Long JWT_EXPIRATION;
 
-    public String parseToken(String token, boolean validate) {
+    public String parseToken(String token) {
         log.info("parseToken: token=" + token);
 
         token = token.replace(JWT_TYPE_BEARER,"");
@@ -56,9 +56,6 @@ public class JwtTokenService implements Serializable {
         String subject = claims.getSubject();
         Date issuedAt = claims.getIssuedAt();
         Date expiration = claims.getExpiration();
-
-        if(validate && expiration.before(new Date()))
-            throw new JwtException("Token Expired");
 
         log.info("END parseToken: subject=" + subject);
 
@@ -83,7 +80,7 @@ public class JwtTokenService implements Serializable {
     }
 
     public String refreshToken(String token) {
-        String subject = parseToken(token, false);
+        String subject = parseToken(token);
         String refreshedToken = generateToken(subject);
         log.info("Refreshed Token: " + token);
         return refreshedToken;

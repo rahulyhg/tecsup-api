@@ -1,0 +1,13 @@
+{
+  "name": "widgetselection_4.7.0",
+  "_cacheHeaders": {
+    "Last-Modified": "Thu, 25 May 2017 16:39:58 GMT",
+    "Content-Length": "3498",
+    "Content-Type": "application/zip"
+  },
+  "main": "index.js",
+  "_source": "http://download.ckeditor.com/widgetselection/releases/widgetselection_4.7.0.zip",
+  "_target": "*",
+  "_originalSource": "http://download.ckeditor.com/widgetselection/releases/widgetselection_4.7.0.zip",
+  "_direct": true
+}
