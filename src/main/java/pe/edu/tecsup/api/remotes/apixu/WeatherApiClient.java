@@ -1,4 +1,4 @@
-package pe.edu.tecsup.api.remote.apixu;
+package pe.edu.tecsup.api.remotes.apixu;
 
 
 import okhttp3.OkHttpClient;
@@ -7,18 +7,17 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- *
+ * https://www.apixu.com/my/
  * Created by Igor Havrylyuk on 14.02.2017.
  */
 
 public class WeatherApiClient {
 
     public static final String BASE_WEATHER_URL = "http://api.apixu.com/v1/";
-    public static final String WEATHER_API_KEY = "543a338148814597a21235831172906";
 
     private static Retrofit sRetrofit = null;
 
-    public WeatherApiClient() {
+    private WeatherApiClient() {
     }
 
     public static Retrofit getClient() {

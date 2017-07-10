@@ -20,7 +20,8 @@ public class TestController {
 	public ResponseEntity<?> test(Model model) throws Exception {
 		log.info("calling test");
 
-		scheduledTask.processingDealyDebts();
+//		scheduledTask.processingDealyDebts();
+        scheduledTask.processingWeatherUpdating();
 
 		return ResponseEntity.ok("OK");
 	}

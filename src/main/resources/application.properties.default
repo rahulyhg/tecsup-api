@@ -24,6 +24,9 @@ spring.datasource.password=docencia
 gapi.clientid=****************************************************************.apps.googleusercontent.com
 fcm.serverkey=A********************************************************************************************************************************ymG
 
+# = apixu.com weather
+apixu.key=543a338148814597a21235831172906
+
 # = JWT ${random.value}
 jwt.secret=secret
 jwt.expiration=604800
