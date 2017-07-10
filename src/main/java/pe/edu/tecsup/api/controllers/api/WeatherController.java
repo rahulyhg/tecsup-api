@@ -38,7 +38,8 @@ public class WeatherController {
             weather.setTemperature(weatherModel.getCurrent().getTempC());
             weather.setHumidity(weatherModel.getCurrent().getHumidity());
             weather.setCondition(weatherModel.getCurrent().getCondition().getText());
-            weather.setIcon(weatherModel.getCurrent().getCondition().getIcon());
+            weather.setIcon("http:"+weatherModel.getCurrent().getCondition().getIcon());
+            weather.setIsday(weatherModel.getCurrent().getIs_day()==1);
 
             return ResponseEntity.ok(weather);
         }catch (Throwable e){
