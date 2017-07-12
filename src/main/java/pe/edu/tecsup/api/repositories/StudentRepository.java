@@ -131,6 +131,14 @@ public class StudentRepository {
                 credit.setPaid(record.get("TOTABONO")!=null?(String)record.get("TOTABONO"):null);
                 credit.setBalance(record.get("SALDO")!=null?(String)record.get("SALDO"):null);
 
+                credit.setTotalmonths(record.get("MESES_AMORTIZA")!=null?((BigDecimal)record.get("MESES_AMORTIZA")).doubleValue():null);
+                credit.setElapsedmonths(record.get("MESES_TRANS")!=null?((BigDecimal)record.get("MESES_TRANS")).doubleValue():null);
+                credit.setRemainingmonths(record.get("MESES_X_TRANS")!=null?((BigDecimal)record.get("MESES_X_TRANS")).doubleValue():null);
+
+                credit.setPayedfee(record.get("CUOCANCELADAS")!=null?((BigDecimal)record.get("CUOCANCELADAS")).doubleValue():null);
+                credit.setElapsedfee(record.get("CUOVENCIDAS")!=null?((BigDecimal)record.get("CUOVENCIDAS")).doubleValue():null);
+                credit.setRemainingfee(record.get("CUO_X_VENCER")!=null?((BigDecimal)record.get("CUO_X_VENCER")).doubleValue():null);
+
                 if(record.get("FECINICIO")!=null && record.get("FECFIN")!=null && record.get("CUOTAMENSUAL")!=null)
                     credit.setExtrainfo("Para cancelar el pago a la fecha establecida debería abonar mensualmente: " + record.get("CUOTAMENSUAL"));
 

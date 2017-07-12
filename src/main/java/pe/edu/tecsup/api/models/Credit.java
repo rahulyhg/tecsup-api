@@ -17,6 +17,12 @@ public class Credit {
     private String extrainfo;
     private List<Debt> debts;
     private List<Pay> pays;
+    private Double totalmonths;
+    private Double elapsedmonths;
+    private Double remainingmonths;
+    private Double payedfee;
+    private Double elapsedfee;
+    private Double remainingfee;
 
     public String getAssigned() {
         return assigned;
@@ -90,6 +96,54 @@ public class Credit {
         this.pays = pays;
     }
 
+    public Double getTotalmonths() {
+        return totalmonths;
+    }
+
+    public void setTotalmonths(Double totalmonths) {
+        this.totalmonths = totalmonths;
+    }
+
+    public Double getElapsedmonths() {
+        return elapsedmonths;
+    }
+
+    public void setElapsedmonths(Double elapsedmonths) {
+        this.elapsedmonths = elapsedmonths;
+    }
+
+    public Double getRemainingmonths() {
+        return remainingmonths;
+    }
+
+    public void setRemainingmonths(Double remainingmonths) {
+        this.remainingmonths = remainingmonths;
+    }
+
+    public Double getPayedfee() {
+        return payedfee;
+    }
+
+    public void setPayedfee(Double payedfee) {
+        this.payedfee = payedfee;
+    }
+
+    public Double getElapsedfee() {
+        return elapsedfee;
+    }
+
+    public void setElapsedfee(Double elapsedfee) {
+        this.elapsedfee = elapsedfee;
+    }
+
+    public Double getRemainingfee() {
+        return remainingfee;
+    }
+
+    public void setRemainingfee(Double remainingfee) {
+        this.remainingfee = remainingfee;
+    }
+
     @Override
     public String toString() {
         return "Credit{" +
@@ -102,6 +156,12 @@ public class Credit {
                 ", extrainfo='" + extrainfo + '\'' +
                 ", debts=" + debts +
                 ", pays=" + pays +
+                ", totalmonths=" + totalmonths +
+                ", elapsedmonths=" + elapsedmonths +
+                ", remainingmonths=" + remainingmonths +
+                ", payedfee=" + payedfee +
+                ", elapsedfee=" + elapsedfee +
+                ", remainingfee=" + remainingfee +
                 '}';
     }
 }
