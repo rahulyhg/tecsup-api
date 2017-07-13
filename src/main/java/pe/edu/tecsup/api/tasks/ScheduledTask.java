@@ -17,10 +17,7 @@ import pe.edu.tecsup.api.utils.Constant;
 import pe.edu.tecsup.api.utils.Mailer;
 
 import javax.servlet.ServletContext;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by ebenites on 16/05/2017.
@@ -99,20 +96,25 @@ public class ScheduledTask {
         log.info("processingWeatherUpdating ...");
         try {
 
+            int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+
             OpenWeatherService service = WeatherApiClient.getClient().create(OpenWeatherService.class);
 
             // https://api.apixu.com/v1/current.json?lang=es&q=Lima&key=*******************************
-            ForecastWeather limaWeather = service.getWeather(WEATHER_API_KEY, "Lima").execute().body();
+            // https://api.apixu.com/v1/forecast.json?lang=es&q=Lima&hour=20&key=*******************************
+            ForecastWeather limaWeather = service.getWeather(WEATHER_API_KEY, "Lima", hour).execute().body();
             servletContext.setAttribute("weather-L", limaWeather);
             log.info(limaWeather);
 
             // https://api.apixu.com/v1/current.json?lang=es&q=Arequipa&key=*******************************
-            ForecastWeather arequipaWeather = service.getWeather(WEATHER_API_KEY, "Arequipa").execute().body();
+            // https://api.apixu.com/v1/forecast.json?lang=es&q=Arequipa&hour=20&key=*******************************
+            ForecastWeather arequipaWeather = service.getWeather(WEATHER_API_KEY, "Arequipa", hour).execute().body();
             servletContext.setAttribute("weather-A", arequipaWeather);
             log.info(arequipaWeather);
 
             // https://api.apixu.com/v1/current.json?lang=es&q=Trujillo&key=*******************************
-            ForecastWeather trujilloWeather = service.getWeather(WEATHER_API_KEY, "Trujillo").execute().body();
+            // https://api.apixu.com/v1/forecast.json?lang=es&q=Trujillo&hour=20&key=*******************************
+            ForecastWeather trujilloWeather = service.getWeather(WEATHER_API_KEY, "Trujillo", hour).execute().body();
             servletContext.setAttribute("weather-T", trujilloWeather);
             log.info(trujilloWeather);
 

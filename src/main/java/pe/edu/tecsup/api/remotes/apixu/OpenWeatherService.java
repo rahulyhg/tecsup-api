@@ -18,4 +18,10 @@ public interface OpenWeatherService {
                     @Query("key") String key,
                     @Query("q") String query);
 
+    @GET("forecast.json?lang=es")
+    Call<ForecastWeather> getWeather(
+            @Query("key") String key,
+            @Query("q") String query,
+            @Query("hour") Integer hour);
+
 }

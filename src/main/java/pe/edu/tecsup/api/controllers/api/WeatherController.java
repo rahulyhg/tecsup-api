@@ -34,12 +34,18 @@ public class WeatherController {
 
             Weather weather = new Weather();
             weather.setLocation(weatherModel.getLocation().getName());
-            weather.setDate(weatherModel.getCurrent().getLastUpdated());
-            weather.setTemperature(weatherModel.getCurrent().getTempC());
-            weather.setHumidity(weatherModel.getCurrent().getHumidity());
-            weather.setCondition(weatherModel.getCurrent().getCondition().getText());
-            weather.setIcon("http:"+weatherModel.getCurrent().getCondition().getIcon());
-            weather.setIsday(weatherModel.getCurrent().getIs_day()==1);
+//            weather.setDate(weatherModel.getCurrent().getLastUpdated());
+//            weather.setTemperature(weatherModel.getCurrent().getTempC());
+//            weather.setHumidity(weatherModel.getCurrent().getHumidity());
+//            weather.setCondition(weatherModel.getCurrent().getCondition().getText());
+//            weather.setIcon("http:"+weatherModel.getCurrent().getCondition().getIcon());
+//            weather.setIsday(weatherModel.getCurrent().getIs_day()==1);
+            weather.setDate(weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getTime());
+            weather.setTemperature(weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getTempC());
+            weather.setHumidity(weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getHumidity());
+            weather.setCondition(weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getCondition().getText());
+            weather.setIcon("http:"+weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getCondition().getIcon());
+            weather.setIsday(weatherModel.getForecast().getForecastday().get(0).getHours().get(0).getIs_day()==1);
 
             return ResponseEntity.ok(weather);
         }catch (Throwable e){
