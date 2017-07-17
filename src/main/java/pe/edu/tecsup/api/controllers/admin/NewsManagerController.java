@@ -1,10 +1,8 @@
 package pe.edu.tecsup.api.controllers.admin;
 
-import com.liferay.mobile.fcm.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
@@ -24,6 +22,7 @@ import pe.edu.tecsup.api.models.New;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.NewsService;
 import pe.edu.tecsup.api.utils.Constant;
+import pe.edu.tecsup.api.utils.Notifier;
 
 import javax.servlet.ServletContext;
 import java.io.File;
@@ -99,12 +98,12 @@ public class NewsManagerController {
         }
     }
 
-    @Value("${fcm.serverkey}")
-    private String FCMSERVERKEY;
-
     @Autowired
     @Qualifier("mvcValidator")
     private Validator validator;
+
+    @Autowired
+    private Notifier notifier;
 
     @PostMapping("/store")
     public String store(/*@Valid */@ModelAttribute("neu") New neu, /*BindingResult result, */Errors errors, @RequestParam("file") MultipartFile file, RedirectAttributes redirectAttrs, @AuthenticationPrincipal User user) throws Exception {
@@ -142,33 +141,7 @@ public class NewsManagerController {
             }
 
             // Notification
-            Sender sender = new Sender(FCMSERVERKEY);
-
-            // Build Notification Payload
-            Notification notification = new Notification.Builder()
-                    .title("¡Noticias Tecsup!")
-                    .body(neu.getTitle())
-                    .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
-                    .icon("ic_news")
-//                    .color("")
-                    .sound("default")
-                    .build();
-
-            Map<String, Object> payload = new HashMap<>();
-            payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_NEWS);
-
-            // Compose a Message:
-            Message message = new Message.Builder()
-                    .to(new Topic(Constant.FIREBASE_TOPIC_NEWS))
-                    .data(payload)
-                    .notification(notification)
-                    .build();
-
-            // Send a Message:
-            Status status = sender.send(message);
-
-            // Show status:
-            log.info("Response: " + status);
+            notifier.notifyNews(neu.getTitle());
 
             redirectAttrs.addFlashAttribute("message", "Registro guardado correctamente");
             return "redirect:/admin/news/";

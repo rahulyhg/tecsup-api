@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.tecsup.api.models.Alert;
+import pe.edu.tecsup.api.models.Student;
 import pe.edu.tecsup.api.repositories.AlertRepository;
 
 import javax.transaction.Transactional;
@@ -26,8 +27,16 @@ public class AlertService {
     }
 
     @Transactional
-    public void save(Integer senderid, String content)throws Exception {
-        alertRepository.save(senderid, content);
+    public List<Student> save(Integer senderid, String content, String sede, Integer formacion, Integer ciclo, Integer seccion)throws Exception {
+        return alertRepository.save(senderid, content, sede, formacion, ciclo, seccion);
+    }
+
+    public void delete(Integer id) throws Exception {
+        alertRepository.delete(id);
+    }
+
+    public void edit(Integer id, String content) throws Exception {
+        alertRepository.edit(id, content);
     }
 
 }

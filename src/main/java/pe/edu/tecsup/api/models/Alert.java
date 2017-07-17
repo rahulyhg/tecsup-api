@@ -11,6 +11,7 @@ public class Alert {
     private String content;
     private Boolean viewed;
     private String date;
+    private String to;
 
     public Long getId() {
         return id;
@@ -52,6 +53,14 @@ public class Alert {
         this.date = date;
     }
 
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
     @Override
     public String toString() {
         return "Alert{" +
@@ -60,6 +69,7 @@ public class Alert {
                 ", content='" + content + '\'' +
                 ", viewed=" + viewed +
                 ", date='" + date + '\'' +
+                ", to='" + to + '\'' +
                 '}';
     }
 }

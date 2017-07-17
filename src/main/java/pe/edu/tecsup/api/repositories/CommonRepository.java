@@ -46,11 +46,11 @@ public class CommonRepository {
         }
     }
 
-    public List<Major> listMajor(String sede) throws Exception {
-        log.info("listMajor("+sede+")");
+    public List<Major> listMajors(String sede) throws Exception {
+        log.info("listMajors("+sede+")");
         try {
 
-            String sql = "select distinct codespecialidad, comercial.nomprod(codespecialidad) as nomespecialidad  \n" +
+            String sql = "select distinct codespecialidad, comercial.nomprod(codespecialidad) || ' ' || 'C'||docencia.nomespecialidad(codespecialidad) as nomespecialidad \n" +
                     "from doc_estado_alumno a\n" +
                     "inner join evaluacion.eva_v_periodo p on p.codperiodo=a.codperiodo and p.situacionregistro='A'\n" +
                     "where ? is null or sede=? \n" +
@@ -112,7 +112,7 @@ public class CommonRepository {
         log.info("listSections("+sede+", "+codespecialidad+", "+codcicle+")");
         try {
 
-            String sql = "select distinct s.codigo as codseccion, s.descripcion as nomseccion\n" +
+            String sql = "select distinct s.codigo as codseccion, decode(s.codigo, 1, 'A', 2, 'B', 3, 'C', 4, 'D', 5, 'E', 6, 'F', 7, 'G', 8, 'H', 9, 'I', 10, 'J', 'X') as nomseccion\n" +
                     "from evaluacion.eva_v_curso_alumno ca\n" +
                     "inner join evaluacion.eva_v_cursos c on c.codcursoejec=ca.codcursoejec and c.situacionregistro='A'\n" +
                     "inner join evaluacion.eva_curso_periodo cp on cp.codcursoejec=c.codcursoejec\n" +

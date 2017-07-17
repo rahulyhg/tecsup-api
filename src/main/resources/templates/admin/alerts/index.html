@@ -5,10 +5,85 @@
     <script type="text/javascript" th:inline="javascript">
         /*<![CDATA[*/
         $(function(){
+
             $('#content').autoGrow();
+
+            $('.editable').editable();
+
+            $.getJSON(/*[[@{/common/seats}]]*/'', function(json){
+                var select = $("#sede").empty().append( $('<option/>').val('').text('Todos') );
+                $.each(json, function (k, v) {
+                    select.append( $('<option/>').val(v.id).text(v.name) );
+                });
+                select.selectpicker('refresh');
+            });
+
+            $("#sede").change(function(){
+
+                var sede = $(this).val();
+                var base = /*[[@{/common/seats/}]]*/'';
+
+                $.getJSON(base + sede + '/majors', function(json){
+                    var select = $("#formacion").empty().append( $('<option/>').val('').text('Todos') );
+                    $.each(json, function (k, v) {
+                        select.append( $('<option/>').val(v.id).text(v.name) );
+                    });
+                    select.selectpicker('refresh');
+
+                    $("#ciclo").empty().append( $('<option/>').val('').text('Todos') ).selectpicker('refresh');
+                    $("#seccion").empty().append( $('<option/>').val('').text('Todos') ).selectpicker('refresh');
+                });
+
+            });
+
+            $("#formacion").change(function(){
+
+                var sede = $("#sede").val();
+                var formacion = $(this).val();
+                var base = /*[[@{/common/seats/}]]*/'';
+
+                $.getJSON(base + sede + '/majors/' + formacion + '/cicles', function(json){
+                    var select = $("#ciclo").empty().append( $('<option/>').val('').text('Todos') );
+                    $.each(json, function (k, v) {
+                        select.append( $('<option/>').val(v.id).text(v.name) );
+                    });
+                    select.selectpicker('refresh');
+
+                    $("#seccion").empty().append( $('<option/>').val('').text('Todos') ).selectpicker('refresh');
+                });
+
+            });
+
+            $("#ciclo").change(function(){
+
+                var sede = $("#sede").val();
+                var formacion = $("#formacion").val();
+                var ciclo = $(this).val();
+                var base = /*[[@{/common/seats/}]]*/'';
+
+                $.getJSON(base + sede + '/majors/' + formacion + '/cicles/' + ciclo + '/sections', function(json){
+                    var select = $("#seccion").empty().append( $('<option/>').val('').text('Todos') );
+                    $.each(json, function (k, v) {
+                        select.append( $('<option/>').val(v.id).text(v.name) );
+                    });
+                    select.selectpicker('refresh');
+                });
+
+            });
+
         })
         /*]]>*/
     </script>
+    <style>
+        .editable-inline, .editable-inline .form-group, .editable-inline .editable-input > .form-control {
+            width: 100% !important;
+        }
+        .editable-inline .editable-input {
+            width: -moz-calc(100% - 76px);
+            width: -webkit-calc(100% - 76px);
+            width: calc(100% - 76px);
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
@@ -32,16 +107,16 @@
                 <div class="panel-body">
 
                     <div class="form-group form-inline">
-                        <select name="sede" id="sede" class="form-control">
+                        <select name="sede" id="sede" class="form-control selectpicker show-tick show-menu-arrow" data-width="fit" data-live-search="true" title="Sede">
                             <option value="">Todos</option>
                         </select>
-                        <select name="formacion" id="formacion" class="form-control">
+                        <select name="formacion" id="formacion" class="form-control selectpicker show-tick show-menu-arrow" data-width="fit" data-live-search="true" title="Formación">
                             <option value="">Todos</option>
                         </select>
-                        <select name="ciclo" id="ciclo" class="form-control">
+                        <select name="ciclo" id="ciclo" class="form-control selectpicker show-tick show-menu-arrow" data-width="fit" data-live-search="true" title="Ciclo">
                             <option value="">Todos</option>
                         </select>
-                        <select name="seccion" id="seccion" class="form-control">
+                        <select name="seccion" id="seccion" class="form-control selectpicker show-tick show-menu-arrow" data-width="fit" data-live-search="true" title="Sección">
                             <option value="">Todos</option>
                         </select>
                     </div>
@@ -52,7 +127,7 @@
 
                 </div>
                 <div class="panel-footer">
-                    <input type="submit" value="Enviar" class="btn btn-primary">
+                    <input type="submit" value="Enviar Notificación" class="btn btn-primary">
                 </div>
             </div>
         </form>
@@ -66,6 +141,7 @@
                     <tr>
                         <th width="64">ID</th>
                         <th>T&iacute;tulo/Contenido</th>
+                        <th width="140">Grupo</th>
                         <th width="140">Publicado</th>
                         <th width="80"></th>
                         <th width="80"></th>
@@ -74,9 +150,10 @@
                 <tbody>
                     <tr th:each="a : ${alerts}">
                         <td th:text="${a.id}"></td>
-                        <td th:text="${a.content}">
+                        <td><div th:id="${'content-' + a.id}" th:text="${a.content}" class="editable" data-type="textarea" data-name="content" data-title="Editar contenido" data-toggle="manual" data-onblur="ignore" data-mode="inline" data-rows="2"  th:attr="data-pk=${a.id},data-url=@{/admin/alerts/edit/} + ${a.id}"></div></td>
+                        <td th:text="${a.to}"></td>
                         <td th:text="${a.date}"></td>
-                        <td><a href="#" th:href="@{/admin/alerts/edit/} + ${a.id}" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Editar</a></td>
+                        <td><a href="javascript:void(0);" th:onclick="'$(\'#content-' + ${a.id} + '\').editable(\'toggle\')'" class="btn btn-warning"><i class="glyphicon glyphicon-edit"></i> Editar</a></td>
                         <td><a href="#" th:href="@{/admin/alerts/delete/} + ${a.id}" class="btn btn-danger"><i class="glyphicon glyphicon-trash"></i> Eliminar</a></td>
                     </tr>
                 </tbody>

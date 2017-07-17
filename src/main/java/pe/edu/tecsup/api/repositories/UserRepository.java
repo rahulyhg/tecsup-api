@@ -80,13 +80,13 @@ public class UserRepository {
         log.info("loadUserByUsername: "+username);
         try {
 
-            String sql = "SELECT U.CODSUJETO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(U.CODSUJETO) AS FULLNAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE \n" +
+            String sql = "SELECT U.CODSUJETO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(U.CODSUJETO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(U.CODSUJETO) AS NAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE \n" +
                         "FROM SEGURIDAD.SEG_USUARIO U \n" +
                         "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO \n" +
                         "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO /*AND CODROL IN (132, 134, 143, 146)*/) \n" + // Admin, Secdoc, Docente, Jefe
                         "AND U.USUARIO = ? \n" +
                         "UNION ALL \n" +
-                        "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
+                        "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
                         "FROM DOCENCIA.DOC_ALUMNO A \n" +
                         "WHERE A.CONDICION NOT IN ('P', 'X') \n" +
                         "AND A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = ?"; // OR CODCARNET = ? hack!
@@ -97,6 +97,7 @@ public class UserRepository {
                     user.setUsername(rs.getString("USUARIO"));
                     user.setId(rs.getInt("ID"));
                     user.setFullname(rs.getString("FULLNAME"));
+                    user.setName(rs.getString("NAME"));
                     user.setEmail(rs.getString("CORREO"));
                     user.setSede(rs.getString("SEDE"));
                     return user;
