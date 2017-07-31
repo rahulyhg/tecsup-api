@@ -24,9 +24,9 @@ public class UserService {
 	}
 
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
-		log.info("calling loadUserByUsername: " + username);
-		return userDao.loadUserByUsername(username); 
-	}
+        log.info("calling loadUserByUsername: " + username);
+        return userDao.loadUserByUsername(username);
+    }
 
 	public byte[] loadUserPicture(Integer id) throws Exception {
         log.info("calling loadUserPicture: " + id);
@@ -52,6 +52,11 @@ public class UserService {
     public void updateToken(String token) {
         log.info("calling updateToken: " + token);
         userDao.updateToken(token);
+    }
+
+    public void validateAdmin(String email) throws Exception {
+        log.info("calling validateAdmin: " + email);
+        userDao.validateAdmin(email);
     }
 
 }

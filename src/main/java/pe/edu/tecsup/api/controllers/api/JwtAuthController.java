@@ -6,6 +6,7 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import io.jsonwebtoken.JwtException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.JwtTokenService;
@@ -60,6 +62,9 @@ public class JwtAuthController {
             // Return the token
             return ResponseEntity.ok(user);
 
+        }catch (UsernameNotFoundException e){
+            log.error(e, e);
+            throw new Exception(e.getMessage());
         }catch (Throwable e){
             log.error(e, e);
             throw e;
@@ -84,6 +89,9 @@ public class JwtAuthController {
 //
 //            return ResponseEntity.ok(user);
 //
+//        }catch (UsernameNotFoundException e){
+//            log.error(e, e);
+//            throw new Exception(e.getMessage());
 //        }catch (Throwable e){
 //            log.error(e, e);
 //            throw e;
@@ -104,23 +112,29 @@ public class JwtAuthController {
 
 
     @PostMapping("google_access_token")
-    public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String gtoken, @RequestParam String instanceid,
+    public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String id_token, @RequestParam String instanceid,
                                                              @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
-        log.info("call createGoogleAuthenticationToken: t:"+gtoken+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
+        log.info("call createGoogleAuthenticationToken: google_id_token:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
             // Attempt to verify the Google Token
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(GAPI_CLIENT_ID)).build();
-            GoogleIdToken idToken = verifier.verify(gtoken);
+
+            GoogleIdToken idToken;
+            try {
+                idToken = verifier.verify(id_token);
+            }catch(IllegalArgumentException e){
+                throw new Exception("No es un Google Token ID valido", e);
+            }
 
             if (idToken == null)
-                throw new Exception("Token invalido, intentar nuevamente o contactar con el administrador.");
+                throw new Exception("Google Token ID incorrexto");
 
             GoogleIdToken.Payload payload = idToken.getPayload();
 
             // Print user identifier
             String userId = payload.getSubject();
-            System.out.println("User ID: " + userId);
+            log.debug("User ID: " + userId);
 
             // Get profile information from payload
             log.debug("ID: " + payload.getSubject());
@@ -133,11 +147,11 @@ public class JwtAuthController {
 
             // Verificar si es del dominio TECSUP
             String usuario = email.substring(0, email.indexOf("@")).toLowerCase();
-            String dominio = email.substring(email.indexOf("@")+1).toLowerCase();
+            String dominio = email.substring(email.indexOf("@") + 1).toLowerCase();
             log.info("usuario:" + usuario + " - dominio:" + dominio);
 
             if (!Arrays.asList(Constant.GOOGLEPLUS_ALLOW_DOMAINS).contains(dominio))
-                throw new Exception("La cuenta de correo " + email + " NO corresponde a la lista de dominios permitidos "+Arrays.toString(Constant.GOOGLEPLUS_ALLOW_DOMAINS)+".");
+                throw new Exception("La cuenta de correo " + email + " NO corresponde a la lista de dominios permitidos " + Arrays.toString(Constant.GOOGLEPLUS_ALLOW_DOMAINS) + ".");
 
             log.info("Cuenta " + usuario + " pertenece a la lista blanca " + Arrays.toString(Constant.GOOGLEPLUS_ALLOW_DOMAINS));
 
@@ -147,9 +161,9 @@ public class JwtAuthController {
 
             // Gmail info
             user.setGid(payload.getSubject());
-            user.setName((String)payload.get("name"));
+            user.setName((String) payload.get("name"));
             user.setEmail(payload.getEmail());
-            user.setPicture((String)payload.get("picture"));
+            user.setPicture((String) payload.get("picture"));
 
             // Generate Token from User
             String token = jwtTokenService.generateToken(user.getUsername());
@@ -164,6 +178,9 @@ public class JwtAuthController {
             // Return the token
             return ResponseEntity.ok(user);
 
+        }catch (UsernameNotFoundException e){
+            log.error(e, e);
+            throw new Exception(e.getMessage());
         }catch (Throwable e){
             log.error(e, e);
             throw e;
@@ -171,20 +188,48 @@ public class JwtAuthController {
     }
 
     @PostMapping("hacked_access_token")
-    public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String instanceid,
+    public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String id_token, @RequestParam String instanceid,
                                                              @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
-        log.info("call createHackedAuthenticationToken: u:"+username+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
+        log.info("call createHackedAuthenticationToken: username:"+username+" - gtoken:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
+
+            // Attempt to verify the Google Token
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(GAPI_CLIENT_ID)).build();
+
+            GoogleIdToken idToken;
+            try {
+                idToken = verifier.verify(id_token);
+            } catch (IllegalArgumentException e) {
+                throw new Exception("No es un Google Token ID valido", e);
+            }
+
+            if (idToken == null)
+                throw new Exception("Google Token ID incorrexto");
+
+            GoogleIdToken.Payload payload = idToken.getPayload();
+
+            // Print user identifier
+            String userId = payload.getSubject();
+            log.debug("User ID: " + userId);
+
+            // Get profile information from payload
+            log.debug("ID: " + payload.getSubject());
+            log.debug("Name: " + payload.get("name"));
+            log.debug("Email: " + payload.getEmail());
+            log.debug("Image URL: " + payload.get("picture"));
+
+            // Validate Admin!!!
+            userService.validateAdmin(payload.getEmail());
 
             // Verificando si se encuentra registrado el usuario
             User user = userService.loadUserByUsername(username);
             log.info(user);
 
             // Gmail info
-            user.setGid("113213635270034661643");
+            user.setGid(payload.getSubject());
             user.setName(user.getFullname());
             user.setEmail(user.getEmail());
-            user.setPicture("http://tatapravesh.com/wp-content/uploads/2016/08/2.png");
+            user.setPicture((payload.get("picture") != null) ? payload.get("picture").toString() : null);
 
             // Generate Token from User
             String token = jwtTokenService.generateToken(user.getUsername());
@@ -199,6 +244,9 @@ public class JwtAuthController {
             // Return the token
             return ResponseEntity.ok(user);
 
+        }catch (UsernameNotFoundException e){
+            log.error(e, e);
+            throw new Exception(e.getMessage());
         }catch (Throwable e){
             log.error(e, e);
             throw e;

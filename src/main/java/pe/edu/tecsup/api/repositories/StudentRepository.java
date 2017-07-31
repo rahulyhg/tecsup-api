@@ -197,7 +197,7 @@ public class StudentRepository {
         }
     }
 
-    @Cacheable("events")    // Cache Enable: https://spring.io/guides/gs/caching/
+    @Cacheable(cacheNames="events", key="#id")    // Cache Enable: https://spring.io/guides/gs/caching/
     public List<Event> getEvents(Integer id) throws Exception {
         log.info("id: "+id);
         try {

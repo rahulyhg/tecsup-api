@@ -74,7 +74,7 @@ public class ScheduledTask {
 
             // https://api.apixu.com/v1/current.json?lang=es&q=Lima&key=*******************************
             // https://api.apixu.com/v1/forecast.json?lang=es&q=Lima&hour=20&key=*******************************
-            ForecastWeather limaWeather = service.getWeather(WEATHER_API_KEY, "-12.04525,-76.95285", hour).execute().body();
+            ForecastWeather limaWeather = service.getWeather(WEATHER_API_KEY, "Lima", hour).execute().body();
             servletContext.setAttribute("weather-L", limaWeather);
             log.info(limaWeather);
 

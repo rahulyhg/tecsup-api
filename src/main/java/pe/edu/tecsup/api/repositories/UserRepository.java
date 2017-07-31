@@ -322,4 +322,27 @@ public class UserRepository {
         }
     }
 
+    public void validateAdmin(String email) throws Exception {
+        log.info("validateAdmin: "+email);
+        try {
+
+            String sql = "SELECT EMAIL FROM API_ADMINS WHERE EMAIL=?";
+
+            String validatedEmail = jdbcTemplate.queryForObject(sql, new RowMapper<String>() {
+                public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getString("EMAIL");
+                }
+            }, email);
+
+            log.info("Admin validate passed: " + validatedEmail);
+
+        }catch (EmptyResultDataAccessException e){
+            log.error(e, e);
+            throw new Exception("NO ERES DIGNO");
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
 }
