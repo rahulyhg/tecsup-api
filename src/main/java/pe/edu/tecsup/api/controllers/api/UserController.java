@@ -38,7 +38,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("picture/{id}")
+    @GetMapping({"picture/{id}", "picture/{id}/photo.jpg"})
     public ResponseEntity<?> getPicture(@PathVariable Integer id) throws Exception{
         log.info("call getPicture: "+id);
         try {
