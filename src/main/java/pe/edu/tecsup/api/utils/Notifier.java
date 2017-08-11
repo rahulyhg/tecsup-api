@@ -33,7 +33,7 @@ public class Notifier {
                     .title("¡Noticias Tecsup!")
                     .body(title)
                     .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
-                    .icon("ic_news")
+                    .icon("in_news")
 //                    .color("")
                     .sound("default")
                     .build();
@@ -70,7 +70,7 @@ public class Notifier {
                     .title("¡Hoy vence tu deuda!")
                     .body("Evita las moras, paga a tiempo")
                     .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
-                    .icon("ic_payment")
+                    .icon("in_payment")
 //                    .color("")
                     .sound("default")
                     .build();
@@ -108,7 +108,7 @@ public class Notifier {
                     .title("¡Nueva notificación recibida!")
                     .body(from + " dice: '" + content)
                     .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
-                    .icon("ic_notification")
+                    .icon("in_notification")
 //                    .color("")
                     .sound("default")
                     .build();
