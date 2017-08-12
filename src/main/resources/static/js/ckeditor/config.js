@@ -67,7 +67,7 @@ CKEDITOR.editorConfig = function( config ) {
     ];
 
     //	http://docs.ckeditor.com/#!/guide/dev_file_browse_upload
-    config.filebrowserUploadUrl =  '/admin/news/upload?v=1';
+    config.filebrowserUploadUrl =  ((window.location.pathname.indexOf('/tecsup-api') != -1)?'/tecsup-api':'') + '/admin/news/upload?v=1';
 
 };
 

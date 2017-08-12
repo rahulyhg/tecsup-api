@@ -1,9 +1,6 @@
 package pe.edu.tecsup.api.controllers;
 
-import com.liferay.mobile.fcm.Message;
-import com.liferay.mobile.fcm.Notification;
-import com.liferay.mobile.fcm.Sender;
-import com.liferay.mobile.fcm.Status;
+import com.liferay.mobile.fcm.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +33,37 @@ public class TestController {
 //        scheduledTask.processingDealyDebts();
 //        scheduledTask.processingWeatherUpdating();
 
+        /*
+		Sender sender = new Sender(FCMSERVERKEY);
+
+		// Build Notification Payload
+		Notification notification = new Notification.Builder()
+				.title("¡Noticias Tecsup!")
+				.body("Test")
+				.clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
+				.icon("in_news")
+//                    .color("")
+				.sound("default")
+				.build();
+
+		Map<String, Object> payload = new HashMap<>();
+		payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_NEWS);
+
+		// Compose a Message:
+		Message message = new Message.Builder()
+				.to(new Topic(Constant.FIREBASE_TOPIC_NEWS))
+				.data(payload)
+				.notification(notification)
+				.build();
+
+		// Send a Message:
+		Status status = sender.send(message);
+*/
+
+/*
+
         // Build Notification Payload
-        Notification notification = new Notification.Builder()
+         notification = new Notification.Builder()
                 .title("¡Nueva notificación recibida!")
                 .body("Test controller")
                 .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
@@ -46,12 +72,12 @@ public class TestController {
                 .sound("default")
                 .build();
 
-        Map<String, Object> payload = new HashMap<>();
+        payload = new HashMap<>();
         payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_ALERTS);
 
         // Compose a Message:
-        Message message = new Message.Builder()
-                .to("dBJtxdrX9mM:APA91bHB57NkbqPYPi1N35E5Db5x2Ef8EcV2ViqVa7QRjYIsWDeiRxkUaj409bmwNYnIYfz1pwTWp91ONjZJkVk317CL-v50Z7BWuRTKs49F22P0gWoOTb76DArDCj4vrtfV-HmXzvZE")
+        message = new Message.Builder()
+                .to("cN4KhGU3-wo:APA91bEVd9YqAdTGId6GiCOn68AjNmgeFKUyjJebBpiNSFgoTjU1yuPTLclR_d3k_VUvweW5uMEeB_mw220FgFY5PY-yKh4bjLqSi-WGQvrxSNsS12fSDJTI1ewtwfCXgJZ_RR6g18vA")
                 .data(payload)
                 .notification(notification)
                 .build();
@@ -59,7 +85,7 @@ public class TestController {
         // Send a Message:
         new Sender(FCMSERVERKEY).send(message);
 
-
+*/
 		return ResponseEntity.ok("OK");
 	}
 

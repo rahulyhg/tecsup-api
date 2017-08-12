@@ -267,12 +267,12 @@ public class NewsManagerController {
                 Map<String, Object> response = new HashMap<>();
                 response.put("fileName", filename);
                 response.put("uploaded", 1);
-                response.put("url", origin + context.getContextPath() + "/admin/news/files/" + filename);
+                response.put("url", origin + context.getContextPath() + "/api/news/files/" + filename);
                 return ResponseEntity.ok(response);
             }
             if(CKEditorFuncNum != null) {
                 Integer funcNum = CKEditorFuncNum;
-                String url =  origin + context.getContextPath() + "/admin/news/files/" + filename;
+                String url =  origin + context.getContextPath() + "/api/news/files/" + filename;
                 String message = "Carga completada";
                 return ResponseEntity.ok("<script type=\"text/javascript\">window.parent.CKEDITOR.tools.callFunction("+funcNum+", '"+url+"', '"+message+"');</script>");
             }

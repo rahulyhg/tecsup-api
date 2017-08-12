@@ -38,7 +38,7 @@ public class Constant {
     public static final String FIREBASE_PAYLOAD_GO = "GO";
     public static final String FIREBASE_PAYLOAD_GO_DEBT = "DEBT";
     public static final String FIREBASE_PAYLOAD_GO_CALENDAR = "CALENDAR";
-    public static final String FIREBASE_PAYLOAD_GO_NEWS = "NEWS";
+    public static final String FIREBASE_PAYLOAD_GO_NEWS = "NEWSLETTER";
     public static final String FIREBASE_PAYLOAD_GO_ALERTS = "ALERTS";
 
     public static final String FIREBASE_TOPIC_NEWS = "news";
