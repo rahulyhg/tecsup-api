@@ -73,17 +73,19 @@ public class StudentController {
         }
     }
 
-	@GetMapping("events/{year}/{month}")
-	public ResponseEntity<?> getEvents(@AuthenticationPrincipal User user, @PathVariable Integer year, @PathVariable Integer month) throws Exception{
+	@GetMapping({"events", "events/{year}/{month}"})
+	public ResponseEntity<?> getEvents(@AuthenticationPrincipal User user, @PathVariable(required = false) Integer year, @PathVariable(required = false) Integer month) throws Exception{
 		log.info("call getEvents: user:" + user + " - year:" + year + " - month:" + month);
 		try {
 
 			List<Event> events = studentervice.getEvents(user.getId());
 
-            for (Iterator<Event> i = events.iterator(); i.hasNext();){
-                Event event = i.next();
-                if(!(event.getYear() != null && event.getMonth() != null && event.getYear().equals(year) && event.getMonth().equals(month))){
-                    i.remove();
+			if(year != null && month != null) {
+                for (Iterator<Event> i = events.iterator(); i.hasNext(); ) {
+                    Event event = i.next();
+                    if (!(event.getYear() != null && event.getMonth() != null && event.getYear().equals(year) && event.getMonth().equals(month))) {
+                        i.remove();
+                    }
                 }
             }
 
