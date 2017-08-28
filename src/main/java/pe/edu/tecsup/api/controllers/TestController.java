@@ -1,19 +1,15 @@
 package pe.edu.tecsup.api.controllers;
 
-import com.liferay.mobile.fcm.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import pe.edu.tecsup.api.tasks.ScheduledTask;
-import pe.edu.tecsup.api.utils.Constant;
-import pe.edu.tecsup.api.utils.Notifier;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class TestController {
@@ -86,7 +82,48 @@ public class TestController {
         new Sender(FCMSERVERKEY).send(message);
 
 */
+
+        /*for (int i=0; i<20; i++){
+            try {
+                log.info(task.generateHash(i));
+            }catch (Exception e){
+                log.error(e);
+            }
+            try {
+                log.info(task.generateHash(i));
+            }catch (Exception e){
+                log.error(e);
+            }
+            try {
+                log.info(task.generateHash(i));
+            }catch (Exception e){
+                log.error(e);
+            }
+                log.info(TOKEN);
+
+        }*/
+
 		return ResponseEntity.ok("OK");
 	}
+
+//	@Autowired
+//    private Task task;
+//
+//    private static int TOKEN = 1;
+//
+//	@Component
+//    class Task{
+//
+//        @Cacheable(cacheNames="generateHash", key="#id", unless="#result == null") // las excepciones no se cachean
+//        public String generateHash(Integer id) throws Exception{
+//            Thread.sleep(3000L);
+//            if(id == 10)
+//                return null;
+//            if(TOKEN == 15)
+//                throw new Exception("HORROR");
+//            return "ID: " + id + " - HASH: " + (TOKEN++);
+//        }
+//
+//    }
 
 }

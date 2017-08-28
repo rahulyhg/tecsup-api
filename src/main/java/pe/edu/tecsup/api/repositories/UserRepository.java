@@ -180,7 +180,7 @@ public class UserRepository {
         }
     }
 
-    @Cacheable("picture")
+    //@Cacheable("picture")
     public byte[] loadThumbedUserPicture(Integer id) throws Exception {
         log.info("loadThumbedUserPicture: "+id);
         try {

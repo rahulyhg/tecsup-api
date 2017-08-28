@@ -118,7 +118,7 @@ public class JwtAuthController {
         try {
 
             // Attempt to verify the Google Token
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).setAudience(Collections.singletonList(GAPI_CLIENT_ID)).build();
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory).build();
 
             GoogleIdToken idToken;
             try {
