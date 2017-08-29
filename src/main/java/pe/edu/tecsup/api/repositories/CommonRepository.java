@@ -51,7 +51,7 @@ public class CommonRepository {
         try {
 
             String sql = "select distinct codespecialidad, comercial.nomprod(codespecialidad) || ' ' || 'C'||docencia.nomespecialidad(codespecialidad) as nomespecialidad \n" +
-                    "from doc_estado_alumno a\n" +
+                    "from docencia.doc_estado_alumno a\n" +
                     "inner join evaluacion.eva_v_periodo p on p.codperiodo=a.codperiodo and p.situacionregistro='A'\n" +
                     "where ? is null or sede=? \n" +
                     "order by 2";
