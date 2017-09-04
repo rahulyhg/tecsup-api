@@ -82,9 +82,9 @@ public class UserRepository {
 
             String sql = "SELECT U.CODSUJETO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(U.CODSUJETO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(U.CODSUJETO) AS NAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE \n" +
                         "FROM SEGURIDAD.SEG_USUARIO U \n" +
-                        "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO \n" +
+                        "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO AND P.ESACTIVO='S' \n" +
                         "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO /*AND CODROL IN (132, 134, 143, 146)*/) \n" + // Admin, Secdoc, Docente, Jefe
-                        "AND U.USUARIO = ? \n" +
+                        "AND U.USUARIO = ? AND REGEXP_LIKE(trim(U.USUARIO), '^[[:alpha:]]+$') \n" +
                         "UNION ALL \n" +
                         "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
                         "FROM DOCENCIA.DOC_ALUMNO A \n" +
@@ -137,7 +137,7 @@ public class UserRepository {
                     }
                     return role;
                 }
-            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
+            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, user.getUsername()));
 
             user.setAuthorities(roles);
 
