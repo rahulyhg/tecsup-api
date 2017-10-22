@@ -8,6 +8,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import pe.edu.tecsup.api.models.*;
 import pe.edu.tecsup.api.services.Studentervice;
@@ -74,17 +75,19 @@ public class StudentController {
     }
 
 	@GetMapping({"events", "events/{year}/{month}"})
-	public ResponseEntity<?> getEvents(@AuthenticationPrincipal User user, @PathVariable(required = false) Integer year, @PathVariable(required = false) Integer month) throws Exception{
+	public ResponseEntity<?> getEvents(@RequestHeader(value="Authorization") String token, @AuthenticationPrincipal User user, @PathVariable(required = false) Integer year, @PathVariable(required = false) Integer month) throws Exception{
 		log.info("call getEvents: user:" + user + " - year:" + year + " - month:" + month);
 		try {
 
 			List<Event> events = studentervice.getEvents(user.getId());
 
-			if(year != null && month != null) {
-                for (Iterator<Event> i = events.iterator(); i.hasNext(); ) {
-                    Event event = i.next();
-                    if (!(event.getYear() != null && event.getMonth() != null && event.getYear().equals(year) && event.getMonth().equals(month))) {
-                        i.remove();
+			if(!"Apple".equalsIgnoreCase(studentervice.getDeviceByToken(token))){   // TEMPORAL FIXED
+                if(year != null && month != null) {
+                    for (Iterator<Event> i = events.iterator(); i.hasNext(); ) {
+                        Event event = i.next();
+                        if (!(event.getYear() != null && event.getMonth() != null && event.getYear().equals(year) && event.getMonth().equals(month))) {
+                            i.remove();
+                        }
                     }
                 }
             }

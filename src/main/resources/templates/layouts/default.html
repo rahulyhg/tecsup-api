@@ -130,7 +130,7 @@
             <div id="navbar" class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
                     <li class="active"><a href="#" th:href="@{/}">Inicio</a></li>
-                    <li><a href="#about">About</a></li>
+                    <!--li><a href="#about">About</a></li-->
                 </ul>
                 <ul class="nav navbar-nav navbar-right" sec:authorize="isAuthenticated()">
                     <li class="dropdown">
@@ -139,13 +139,14 @@
                             <th:block sec:authentication="principal.fullname">Erick Benites</th:block> <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a href="#" th:href="@{/profile}">Perfil</a></li>
-                            <li role="separator" class="divider"></li>
+                            <!--li><a href="#" th:href="@{/profile}">Perfil</a></li>
+                            <li><a href="#" th:href="@{/security}">Seguridad</a></li>
+                            <li role="separator" class="divider"></li-->
                             <li><a href="#" th:href="@{/logout}">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
-                <ul class="nav navbar-nav navbar-right" sec:authorize="hasAnyAuthority('ROLE_ADMINISTRADOR', 'ROLE_SECRETARIA')">
+                <!--ul class="nav navbar-nav navbar-right" sec:authorize="hasAnyAuthority('ROLE_ADMINISTRADOR', 'ROLE_SECRETARIA')">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Administraci&oacute;n <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -153,9 +154,10 @@
                             <!--<li role="separator" class="divider"></li>-->
                         </ul>
                     </li>
-                </ul>
-                <ul class="nav navbar-nav navbar-right" sec:authorize="hasAnyAuthority('ROLE_ADMINISTRADOR', 'ROLE_SECRETARIA', 'ROLE_DIRECTOR', 'ROLE_JEFE', 'ROLE_DOCENTE')">
-                    <li><a href="#" th:href="@{/admin/alerts/}">Notificaciones</a></li>
+                </ul-->
+                <ul class="nav navbar-nav navbar-right">
+                    <li sec:authorize="hasAnyAuthority('ROLE_ADMINISTRADOR', 'ROLE_SECRETARIA')"><a href="#" th:href="@{/admin/news/}">Noticias</a></li>
+                    <li sec:authorize="hasAnyAuthority('ROLE_ADMINISTRADOR', 'ROLE_SECRETARIA', 'ROLE_DIRECTOR', 'ROLE_JEFE', 'ROLE_DOCENTE')"><a href="#" th:href="@{/admin/alerts/}">Notificaciones</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>

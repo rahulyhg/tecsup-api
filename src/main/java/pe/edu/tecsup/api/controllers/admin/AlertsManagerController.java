@@ -71,8 +71,10 @@ public class AlertsManagerController {
             }
 
             // Test
-            emails.clear(); emails.add("ebenites@tecsup.edu.pe");
-            registrationIds.clear(); registrationIds.add("foOs3EBDKbU:APA91bHQ8gYQCzCGoOVoE6-A5V5pdFosheZ3BH2xb3dlAr2DZAap93tx8lHU-198eYDQup24L88N6fN8W1dkgZw_FcEBCyHqokcJ4H56ixQpiizzoFxZN79ZdQzW9Py_EX1s2VZMoWdk");
+            //emails.clear();
+            //registrationIds.clear();
+            emails.add("ebenites@tecsup.edu.pe");
+            registrationIds.add("dpJQADvIjk8:APA91bEfrBD5RFMs1FW_6At9-kYqo_VyYbcuqpefXxHzSnq__ajx5RE-JylPF-cN7yENG3MIT0-AkqtZpV3rA4RfzW8Vhu4Pt-_GXmbHK5XRm-mDvFosxiIBMroWfAiVYSlAE42HkFBL");
             // End Test
 
             // Mailing

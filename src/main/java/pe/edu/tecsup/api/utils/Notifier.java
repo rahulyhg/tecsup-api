@@ -78,18 +78,36 @@ public class Notifier {
             Map<String, Object> payload = new HashMap<>();
             payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_DEBT);
 
-            // Compose a Message:
-            Message message = new Message.Builder()
-                    .to(registrationIds)
-                    .data(payload)
-                    .notification(notification)
-                    .build();
+            // Up to 1000 tokens are allowed for a multicast message
+            int size = registrationIds.size();
+            int pages = size/1000;
+            if(size % 1000 > 0) pages++;
 
-            // Send a Message:
-            Status status = sender.send(message);
+            int curpage = 0, first, last;
 
-            // Show status:
-            log.info("Response: " + status);
+            do{
+                first = curpage * 1000;
+                last = ((curpage + 1 ) * 1000);
+                last = (last > size) ? size : last;
+                curpage++;
+
+                log.info("f:"+first+" - l:" +last);
+                List<String> subRegistrationIds = registrationIds.subList(first, last);
+
+                // Compose a Message:
+                Message message = new Message.Builder()
+                        .to(subRegistrationIds)
+                        .data(payload)
+                        .notification(notification)
+                        .build();
+
+                // Send a Message:
+                Status status = sender.send(message);
+
+                // Show status:
+                log.info("Response: " + status);
+
+            }while (curpage < pages);
 
         } catch (Exception e) {
             log.error(e, e);
@@ -116,18 +134,36 @@ public class Notifier {
             Map<String, Object> payload = new HashMap<>();
             payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_ALERTS);
 
-            // Compose a Message:
-            Message message = new Message.Builder()
-                    .to(registrationIds)
-                    .data(payload)
-                    .notification(notification)
-                    .build();
+            // Up to 1000 tokens are allowed for a multicast message
+            int size = registrationIds.size();
+            int pages = size/1000;
+            if(size % 1000 > 0) pages++;
 
-            // Send a Message:
-            Status status = sender.send(message);
+            int curpage = 0, first, last;
 
-            // Show status:
-            log.info("Response: " + status);
+            do{
+                first = curpage * 1000;
+                last = ((curpage + 1 ) * 1000);
+                last = (last > size) ? size : last;
+                curpage++;
+
+                log.info("f:"+first+" - l:" +last);
+                List<String> subRegistrationIds = registrationIds.subList(first, last);
+
+                // Compose a Message:
+                Message message = new Message.Builder()
+                        .to(subRegistrationIds)
+                        .data(payload)
+                        .notification(notification)
+                        .build();
+
+                // Send a Message:
+                Status status = sender.send(message);
+
+                // Show status:
+                log.info("Response: " + status);
+
+            }while (curpage < pages);
 
         } catch (Exception e) {
             log.error(e, e);

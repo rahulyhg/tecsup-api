@@ -61,4 +61,9 @@ public class Studentervice {
         return studentRepository.getDebtorInstancesDealy();
     }
 
+	@Deprecated
+	public String getDeviceByToken(String tokenid) {
+		return studentRepository.getDeviceByToken(tokenid);
+	}
+
 }

@@ -3,7 +3,9 @@ package pe.edu.tecsup.api.repositories;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
@@ -12,6 +14,8 @@ import pe.edu.tecsup.api.models.*;
 import pe.edu.tecsup.api.utils.ColorPalette;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -654,6 +658,31 @@ public class StudentRepository {
         }catch (Exception e){
             log.error(e, e);
             throw e;
+        }
+    }
+
+    @Deprecated
+    public String getDeviceByToken(String tokenid) {
+        log.info("getDeviceByToken: "+tokenid);
+        try {
+
+            String sql = "select manufacturer from api_instances i \n" +
+                    "inner join api_tokens t on t.instanceid=i.instanceid \n" +
+                    "where tokenid = ?";
+
+            String device = jdbcTemplate.queryForObject(sql, new RowMapper<String>() {
+                public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getString("manufacturer");
+                }
+            }, tokenid);
+
+            log.info("device: " + device);
+
+            return device;
+
+        }catch (EmptyResultDataAccessException e){
+            log.error(e, e);
+            return null;
         }
     }
 

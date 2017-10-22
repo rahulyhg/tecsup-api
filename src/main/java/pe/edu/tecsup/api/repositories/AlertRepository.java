@@ -10,7 +10,9 @@ import pe.edu.tecsup.api.models.Student;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public class AlertRepository {
@@ -88,7 +90,7 @@ public class AlertRepository {
         try {
 
             String sql = "select (select descripcion from GENERAL.GEN_V_SEDE where codsede=?) nomsede, \n" +
-                    "'C'||docencia.nomespecialidad(?) as nomespecialidad, \n" +
+                    "docencia.nomespecialidad(?) as nomespecialidad, \n" +
                     "decode(?, 1, '1ro', 2, '2do', 3, '3ro', 4, '4to', 5, '5to', 6, '6to', 7, '7mo', 8, '8vo', 9, '9no', 10, '10mo') nomciclo,\n" +
                     "decode(?, 1, 'A', 2, 'B', 3, 'C', 4, 'D', 5, 'E', 6, 'F', 7, 'G', 8, 'H', 9, 'I', 10, 'J') as nomseccion\n" +
                     "from dual";
@@ -99,7 +101,7 @@ public class AlertRepository {
                     if(rs.getString("nomsede") != null)
                         sb.append(rs.getString("nomsede")).append(" ");
                     if(rs.getString("nomespecialidad") != null)
-                        sb.append(rs.getString("nomespecialidad")).append(" ");
+                        sb.append("C").append(rs.getString("nomespecialidad")).append(" ");
                     if(rs.getString("nomciclo") != null)
                         sb.append(rs.getString("nomciclo")).append(" ");
                     if(rs.getString("nomseccion") != null)
@@ -142,12 +144,20 @@ public class AlertRepository {
 
             log.info("students: " + students);
 
+            Set<Integer> studentids = new HashSet<>();  // Eliminar ids repetidos con Set collections
             for (Student student : students) {
                 log.info("student:" + student);
+                studentids.add(student.getId());
+            }
+
+            log.info("studentids: " + studentids);
+
+            for (Integer studentid : studentids) {
+                log.info("studentid:" + studentid);
 
                 sql = "insert into api_alerts_viewers (alertid, userid) values(seq_alerts.currval, ?)";
 
-                inserteds = jdbcTemplate.update(sql, student.getId());
+                inserteds = jdbcTemplate.update(sql, studentid);
                 log.info("Instances: Rows inserteds api_alerts_viewers: " + inserteds);
 
             }
