@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import pe.edu.tecsup.api.models.*;
-import pe.edu.tecsup.api.services.Studentervice;
+import pe.edu.tecsup.api.services.StudentService;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +23,7 @@ public class StudentController {
 	private static final Logger log = Logger.getLogger(StudentController.class);
 
 	@Autowired
-	private Studentervice studentervice;
+	private StudentService studentervice;
 
 	@GetMapping("debts")
 	public ResponseEntity<?> getDebts(@AuthenticationPrincipal User user) throws Exception{

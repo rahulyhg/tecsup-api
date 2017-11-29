@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import pe.edu.tecsup.api.remotes.apixu.OpenWeatherService;
 import pe.edu.tecsup.api.remotes.apixu.WeatherApiClient;
 import pe.edu.tecsup.api.remotes.apixu.models.ForecastWeather;
-import pe.edu.tecsup.api.services.Studentervice;
+import pe.edu.tecsup.api.services.StudentService;
 import pe.edu.tecsup.api.utils.Mailer;
 import pe.edu.tecsup.api.utils.Notifier;
 
@@ -29,7 +29,7 @@ public class ScheduledTask {
     private ServletContext servletContext;
 
     @Autowired
-    private Studentervice studentervice;
+    private StudentService studentervice;
 
     @Autowired
     private Mailer mailer;

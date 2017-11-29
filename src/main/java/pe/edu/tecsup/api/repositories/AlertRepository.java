@@ -121,7 +121,7 @@ public class AlertRepository {
                     "inner join evaluacion.eva_curso_periodo cp on cp.codcursoejec=c.codcursoejec\n" +
                     "inner join evaluacion.eva_v_periodo p on p.codperiodo=cp.codperiodo and p.situacionregistro='A'\n" +
                     "inner join evaluacion.eva_v_seccion s on s.codseccion=ca.seccion\n" +
-                    "LEFT JOIN API_INSTANCES I ON I.LASTUSERID=CA.CODALUMNO AND I.APP='TECSUP'\n" +
+                    "LEFT JOIN API_INSTANCES I ON I.LASTUSERID=CA.CODALUMNO AND I.APP='TECSUP' AND I.STATUS='1'\n" +
                     "where 1=1\n" +
                     "and (? is null or c.sede=?)\n" +
                     "and (? is null or ca.codespecialidad=?)\n" +

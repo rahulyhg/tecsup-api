@@ -9,9 +9,9 @@ import pe.edu.tecsup.api.repositories.StudentRepository;
 import java.util.List;
 
 @Service
-public class Studentervice {
+public class StudentService {
 
-	private static Logger log = Logger.getLogger(Studentervice.class);
+	private static Logger log = Logger.getLogger(StudentService.class);
 	
 	@Autowired
 	private StudentRepository studentRepository;

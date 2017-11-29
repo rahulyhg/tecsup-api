@@ -114,6 +114,39 @@ public class Notifier {
         }
     }
 
+    public void notifyIncident(List<String> registrationIds, String customer, String location) {
+        log.info("notifyIncident: " + registrationIds);
+        try {
+
+            Sender sender = new Sender(FCMSERVERKEY);
+
+            // Build Notification Payload
+            Notification notification = new Notification.Builder()
+                    .title("Nueva solicitud de atención")
+                    .body(customer + " en el " + location)
+                    .clickAction(".activities.MainActivity")
+                    .icon("in_support")
+//                    .color("")
+                    .sound("default")
+                    .build();
+
+            // Compose a Message:
+            Message message = new Message.Builder()
+                    .to(registrationIds)
+                    .notification(notification)
+                    .build();
+
+            // Send a Message:
+            Status status = sender.send(message);
+
+            // Show status:
+            log.info("Response: " + status);
+
+        } catch (Exception e) {
+            log.error(e, e);
+        }
+    }
+
     @Async
     public void notifyAlert(List<String> registrationIds, String from, String content) {
         log.info("notifyAlert: f:" + from + " - c:" + content + " - i:" + registrationIds);

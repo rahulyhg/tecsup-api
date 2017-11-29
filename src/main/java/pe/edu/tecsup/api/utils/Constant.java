@@ -43,4 +43,8 @@ public class Constant {
 
     public static final String FIREBASE_TOPIC_NEWS = "news";
 
+    public static final String INCIDENT_STATUS_PENDIENT = "P";
+    public static final String INCIDENT_STATUS_ATENTION = "A";
+    public static final String INCIDENT_STATUS_CLOSED = "C";
+
 }

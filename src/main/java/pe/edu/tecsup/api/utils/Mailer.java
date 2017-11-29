@@ -7,8 +7,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import pe.edu.tecsup.api.models.Incident;
+import pe.edu.tecsup.api.models.User;
 
 import javax.mail.internet.MimeMessage;
+import java.text.SimpleDateFormat;
 
 @Component
 public class Mailer {
@@ -45,6 +48,31 @@ public class Mailer {
             mailMsg.setTo(to);
             mailMsg.setSubject(SUBJECT + "Nueva notificación enviada");
             mailMsg.setText(message);
+            javaMailSender.send(mimeMessage);
+        }catch (Exception e){
+            log.error(e, e);
+        }
+    }
+
+    @Async
+    public void sendMailByIncident(String[] to, User customer, Incident incident){
+        log.info("sendMailByIncident: " + "t:" + to + "c:" + customer + "i:" + incident);
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
+            mailMsg.setFrom(Constant.EMAIL_FROM);
+            mailMsg.setTo(to);
+            //mailMsg.setCc(customer.getEmail());
+            mailMsg.setSubject(SUBJECT + "Nueva solicitud de atención");
+
+            String text = "<p><h3>Solicitud de atención a incidente generada</h3></p>" +
+                    "<p><b>Número:</b> " + String.format("%05d", incident.getId()) + "<br/>" +
+                    "<b>Docente:</b> " + customer.getFullname() + "<br/>" +
+                    "<b>Ambiente:</b> " + incident.getLocation() + "<br/>" +
+                    "<b>Fecha:</b> " + (new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(incident.getCreated())) + "<br/></p>" +
+                    "<p>Soporte de TI</p>";
+
+            mailMsg.setText(text, true);
             javaMailSender.send(mimeMessage);
         }catch (Exception e){
             log.error(e, e);

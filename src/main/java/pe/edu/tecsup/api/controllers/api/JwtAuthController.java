@@ -113,7 +113,7 @@ public class JwtAuthController {
 
     @PostMapping("google_access_token")
     public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String id_token, @RequestParam String instanceid,
-                                                             @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+                                                             @RequestParam(required = false, defaultValue = "TECSUP") String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
         log.info("call createGoogleAuthenticationToken: google_id_token:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
@@ -171,7 +171,7 @@ public class JwtAuthController {
             user.setToken(token);
 
             // Updating instance in db
-            userService.saveAccess(user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+            userService.saveAccess(app, user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
 
             log.info(user);
 
@@ -189,7 +189,7 @@ public class JwtAuthController {
 
     @PostMapping("hacked_access_token")
     public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String id_token, @RequestParam String instanceid,
-                                                             @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+                                                             @RequestParam(required = false, defaultValue = "TECSUP") String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
         log.info("call createHackedAuthenticationToken: username:"+username+" - gtoken:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
@@ -237,7 +237,7 @@ public class JwtAuthController {
             user.setToken(token);
 
             // Updating instance in db
-            userService.saveAccess(user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+            userService.saveAccess(app, user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
 
             log.info(user);
 

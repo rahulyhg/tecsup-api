@@ -39,9 +39,9 @@ public class UserService {
     }
 
     @Transactional
-    public void saveAccess(Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
+    public void saveAccess(String app, Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
 		log.info("calling saveAccess: " + userid + " - instanceid:" + instanceid + " - token:" + token);
-		userDao.saveAccess(userid, instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+		userDao.saveAccess(app, userid, instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
     }
 
     public void destroyToken(String token) throws Exception {

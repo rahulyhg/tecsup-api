@@ -84,12 +84,13 @@ public class UserRepository {
                         "FROM SEGURIDAD.SEG_USUARIO U \n" +
                         "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO AND P.ESACTIVO='S' \n" +
                         "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO /*AND CODROL IN (132, 134, 143, 146)*/) \n" + // Admin, Secdoc, Docente, Jefe
-                        "AND U.USUARIO = ? AND REGEXP_LIKE(trim(U.USUARIO), '^[[:alpha:]]+$') \n" +
+                        "AND REGEXP_LIKE(trim(U.USUARIO), '^[[:alpha:]]+$') " +
+                        "AND (U.USUARIO = ?    OR P.CORREO = ?) \n" + // OR CORREO = ? casos usuario!=correo (mchavez!=mchavezl)
                         "UNION ALL \n" +
                         "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
                         "FROM DOCENCIA.DOC_ALUMNO A \n" +
                         "WHERE A.CONDICION NOT IN ('P', 'X') \n" +
-                        "AND A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = ?"; // OR CODCARNET = ? hack!
+                        "AND (A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = ?) "; // OR CODCARNET = ? hack!
 
             User user = jdbcTemplate.queryForObject(sql, new RowMapper<User>() {
                 public User mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -102,7 +103,7 @@ public class UserRepository {
                     user.setSede(rs.getString("SEDE"));
                     return user;
                 }
-            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username), username,    new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
+            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username), username,    new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
 
             sql = "SELECT CODIGO AS ID, NOMBRE AS NAME \n" +
                     "FROM SEGURIDAD.SEG_USUARIO_ROL U \n" +
@@ -240,8 +241,8 @@ public class UserRepository {
         }
     }
 
-    public void saveAccess(Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
-        log.info("saveAccess: userid:" + userid + " - instanceid:" + instanceid + " - token:" + token+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
+    public void saveAccess(String app, Integer userid, String instanceid, String token, String deviceid, String manufacturer, String model, String device, String kernel, String version, Integer sdk) throws Exception {
+        log.info("saveAccess: app:" + app + " - userid:" + userid + " - instanceid:" + instanceid + " - token:" + token+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
             /**
              * Instances
@@ -249,7 +250,7 @@ public class UserRepository {
             // Update instance if exists
             String sql = "UPDATE API_INSTANCES SET APP=?, LASTUSERID=?, LASTDATE=SYSDATE, STATUS=1, DEVICEID=?, MANUFACTURER=?, MODEL=?, DEVICE=?, KERNEL=?, VERSION=?, SDK=? WHERE INSTANCEID=?";
 
-            int updateds = jdbcTemplate.update(sql, "TECSUP", userid, deviceid, manufacturer, model, device, kernel, version, sdk, instanceid);
+            int updateds = jdbcTemplate.update(sql, app, userid, deviceid, manufacturer, model, device, kernel, version, sdk, instanceid);
             log.info("Instances: Rows updateds: " + updateds);
 
             if(updateds == 0){
@@ -257,7 +258,7 @@ public class UserRepository {
                 sql = "INSERT INTO API_INSTANCES (INSTANCEID, APP, LASTUSERID, LASTDATE, STATUS, DEVICEID, MANUFACTURER, MODEL, DEVICE, KERNEL, VERSION, SDK) " +
                         "VALUES(?, ?, ?, SYSDATE, 1, ?, ?, ?, ?, ?, ?, ?)";
 
-                int inserteds = jdbcTemplate.update(sql, instanceid, "TECSUP", userid, deviceid, manufacturer, model, device, kernel, version, sdk);
+                int inserteds = jdbcTemplate.update(sql, instanceid, app, userid, deviceid, manufacturer, model, device, kernel, version, sdk);
                 log.info("Instances: Rows inserteds: " + inserteds);
             }
 

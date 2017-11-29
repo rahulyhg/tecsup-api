@@ -1,5 +1,7 @@
 package pe.edu.tecsup.api.models;
 
+import java.util.List;
+
 /**
  * Created by ebenites on 15/05/2017.
  */
@@ -11,6 +13,7 @@ public class Course {
     private String section;
     private Integer idteacher;
     private String teacher;
+    private List<Section> sections;
 
     public Long getId() {
         return id;
@@ -60,6 +63,14 @@ public class Course {
         this.teacher = teacher;
     }
 
+    public List<Section> getSections() {
+        return sections;
+    }
+
+    public void setSections(List<Section> sections) {
+        this.sections = sections;
+    }
+
     @Override
     public String toString() {
         return "Course{" +
@@ -69,6 +80,7 @@ public class Course {
                 ", section='" + section + '\'' +
                 ", idteacher=" + idteacher +
                 ", teacher='" + teacher + '\'' +
+                ", sections=" + sections +
                 '}';
     }
 }

@@ -27,6 +27,9 @@ fcm.serverkey=A*****************************************************************
 # = apixu.com weather
 apixu.key=543a338148814597a21235831172906
 
+# = twilio api key
+twilio.key=W73jruwo783UOe8eo38iUR84ikdvb285h
+
 # = JWT ${random.value}
 jwt.secret=secret
 jwt.expiration=604800
