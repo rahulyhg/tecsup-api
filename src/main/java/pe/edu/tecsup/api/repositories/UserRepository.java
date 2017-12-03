@@ -135,18 +135,15 @@ public class UserRepository {
                         case Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO:
                             role.setName(Constant.AUTHORITY_SEVA_ESTUDIANTE);
                             break;
+                        case Constant.ROLE_PORTAL_SOPORTE:
+                            role.setName(Constant.AUTHORITY_PORTAL_SOPORTE);
+                            break;
                     }
                     return role;
                 }
             }, new SqlParameterValue(OracleTypes.FIXED_CHAR, user.getUsername()));
 
             user.setAuthorities(roles);
-
-            // Default role
-            if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DOCENTE)))
-                user.setRole(Constant.ROLE_SEVA_DOCENTE);
-            else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE)) || user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO)))
-                user.setRole(Constant.ROLE_SEVA_ESTUDIANTE);
 
             log.info("User found: " + user);
 

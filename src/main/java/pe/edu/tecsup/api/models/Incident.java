@@ -20,10 +20,10 @@ public class Incident {
 
     private String comments;
 
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone="GMT-5")
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone="GMT-5")
     private Date created;
 
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone="GMT-5")
+    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ", timezone="GMT-5")
     private Date updated;
 
     private Integer technicalid;

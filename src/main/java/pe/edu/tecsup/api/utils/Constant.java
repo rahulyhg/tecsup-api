@@ -6,6 +6,10 @@ public class Constant {
 
     public static final String PATH_NEWS = "/var/data/tecsup-api/news/";
 
+    public static final String APP_TECSUP = "TECSUP";
+    public static final String APP_TECSUP_DOCENTE = "TECSUP-DOCENTES";
+    public static final String APP_TECSUP_SOPORTE = "TECSUP-SOPORTE";
+
     public static final int SEGURIDAD_USUARIO_ACEPTADA = 0;
     public static final int SEGURIDAD_USUARIO_NO_ENCONTRADO = -1;
     public static final int SEGURIDAD_USUARIO_DESHABILITADO = -2;
@@ -21,6 +25,7 @@ public class Constant {
     public static final String AUTHORITY_SEVA_JEFE_DEPARTAMENTO = "ROLE_JEFE";
     public static final String AUTHORITY_SEVA_DOCENTE = "ROLE_DOCENTE";
     public static final String AUTHORITY_SEVA_ESTUDIANTE = "ROLE_ESTUDIANTE";
+    public static final String AUTHORITY_PORTAL_SOPORTE = "ROLE_SOPORTE";
 
     public static final int ROLE_SEVA_ADMINISTRADOR = 132; // SEVA - Administrador
     public static final int ROLE_SEVA_SECRETARIA = 134; // SEVA - Secretaría Docente
@@ -29,6 +34,7 @@ public class Constant {
     public static final int ROLE_SEVA_DOCENTE = 143; // SEVA - Docente
     public static final int ROLE_SEVA_ESTUDIANTE = 145; // SEVA - Estudiante
     public static final int ROLE_SEVA_ESTUDIANTE_ANTIGUO = 45; // SEVA - Estudiante Antiguo
+    public static final int ROLE_PORTAL_SOPORTE = 214; // PORTAL - Soporte
 
     public static final int PAGINATION_LIMIT = 20;
 

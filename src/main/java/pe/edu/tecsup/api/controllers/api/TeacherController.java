@@ -247,9 +247,9 @@ public class TeacherController {
 
             // Test
             emails.clear();
-            registrationIds.clear();
+//            registrationIds.clear();
             emails.add("ebenites@tecsup.edu.pe");
-            registrationIds.add("ccF3KPsH3VM:APA91bHr-HP1o_mBAR4l52NoqlclGwfxfono-Nvlb3kghdTPAY-0Rrev5o6dvUheELJtar4yBUq5XfJcucUkYQdl1bHhoHB1TO4UGkXpAUCVS7_Ja_ChKsMw_rMr_3FwfJjkLfiyyWzZ");
+//            registrationIds.add("ccF3KPsH3VM:APA91bHr-HP1o_mBAR4l52NoqlclGwfxfono-Nvlb3kghdTPAY-0Rrev5o6dvUheELJtar4yBUq5XfJcucUkYQdl1bHhoHB1TO4UGkXpAUCVS7_Ja_ChKsMw_rMr_3FwfJjkLfiyyWzZ");
             // End Test
 
             // Mailing
@@ -265,15 +265,68 @@ public class TeacherController {
         }
     }
 
-    @GetMapping("incident/{status}")
-    public ResponseEntity<?> getIncidentsByStatus(@AuthenticationPrincipal User user, @PathVariable String status) throws Exception {
+    @GetMapping({"incident", "incident/{status}"})
+    public ResponseEntity<?> getIncidentsByStatus(@AuthenticationPrincipal User user, @PathVariable(required = false) String status) throws Exception {
         log.info("call getIncidentsByStatus: user:" + user + " - status:" + status);
         try {
 
-            List<Incident> incidents = teacherService.getIncidents(user.getSede(), status);
+            List<Incident> incidents = new ArrayList<>();
+
+            if(status == null)
+                incidents = teacherService.getAllIncidents();
+            else{
+                if(Constant.INCIDENT_STATUS_PENDIENT.equals(status)){
+                    incidents = teacherService.getIncidents(user.getSede(), status);
+                }else if(Constant.INCIDENT_STATUS_ATENTION.equals(status) || Constant.INCIDENT_STATUS_CLOSED.equals(status)){
+                    incidents = teacherService.getIncidentsByTechnical(user.getId(), status);
+                }
+            }
+
             log.info(incidents);
 
             return ResponseEntity.ok(incidents);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @PatchMapping("incident/{id}")
+    public ResponseEntity<?> patchIncidentsByStatus(@AuthenticationPrincipal User user, @PathVariable Integer id, @RequestParam String status) throws Exception {
+        log.info("call patchIncidentsByStatus: user:" + user + " - status:" + status);
+        try {
+
+            if(!Constant.INCIDENT_STATUS_ATENTION.equals(status) && !Constant.INCIDENT_STATUS_CLOSED.equals(status))
+                throw new Exception("Estado " + status + " no permitido");
+
+            Incident incident = teacherService.getIncident(id);
+
+            if(Constant.INCIDENT_STATUS_ATENTION.equals(status) && !Constant.INCIDENT_STATUS_PENDIENT.equals(incident.getStatus()))
+                throw new Exception("El ticket ya fue tomado por " + incident.getTechnical());
+
+            teacherService.updateIncident(id, user.getId(), status);
+
+            incident = teacherService.getIncident(id);
+
+            // Notification
+            Customer customer = teacherService.getCustomer(incident.getCustomerid());
+            log.info(customer);
+
+            // Test
+//            customer.getInstancesid().clear();
+            customer.setEmail("ebenites@tecsup.edu.pe");
+//            customer.getInstancesid().add("ccF3KPsH3VM:APA91bHr-HP1o_mBAR4l52NoqlclGwfxfono-Nvlb3kghdTPAY-0Rrev5o6dvUheELJtar4yBUq5XfJcucUkYQdl1bHhoHB1TO4UGkXpAUCVS7_Ja_ChKsMw_rMr_3FwfJjkLfiyyWzZ");
+            // End Test
+
+            // Mailing
+            mailer.sendMailAttention(customer.getEmail(), incident);
+
+            // Notification
+            notifier.notifyIncidentAttention(customer.getInstancesid(), incident);
+
+            log.info(incident);
+
+            return ResponseEntity.ok(incident);
         }catch (Throwable e){
             log.error(e, e);
             throw e;

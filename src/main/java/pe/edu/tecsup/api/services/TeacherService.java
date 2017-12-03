@@ -88,4 +88,24 @@ public class TeacherService {
         return teacherRepository.getIncidents(sede, status);
     }
 
+    public List<Incident> getIncidentsByTechnical(Integer userid, String status) throws Exception {
+        log.info("getIncidentsByTechnical: " + userid + " - status:" + status);
+        return teacherRepository.getIncidentsByTechnical(userid, status);
+    }
+
+    public List<Incident> getAllIncidents() throws Exception {
+        log.info("getAllIncidents: ");
+        return teacherRepository.getAllIncidents();
+    }
+
+    public void updateIncident(Integer id, Integer technicalid, String status) throws Exception {
+        log.info("updateIncident: id:"+id+", technicalid:" + technicalid + ", status:" + status);
+        teacherRepository.updateIncident(id, technicalid, status);
+    }
+
+    public Customer getCustomer(Integer id) throws Exception {
+        log.info("getCustomer: " + id);
+        return teacherRepository.getCustomer(id);
+    }
+
 }

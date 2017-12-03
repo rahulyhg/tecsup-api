@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import pe.edu.tecsup.api.models.Incident;
 
 import java.util.HashMap;
 import java.util.List;
@@ -125,6 +126,49 @@ public class Notifier {
                     .title("Nueva solicitud de atención")
                     .body(customer + " en el " + location)
                     .clickAction(".activities.MainActivity")
+                    .icon("in_support")
+//                    .color("")
+                    .sound("default")
+                    .build();
+
+            // Compose a Message:
+            Message message = new Message.Builder()
+                    .to(registrationIds)
+                    .notification(notification)
+                    .build();
+
+            // Send a Message:
+            Status status = sender.send(message);
+
+            // Show status:
+            log.info("Response: " + status);
+
+        } catch (Exception e) {
+            log.error(e, e);
+        }
+    }
+
+    public void notifyIncidentAttention(List<String> registrationIds, Incident incident) {
+        log.info("notifyIncidentAttention: " + registrationIds);
+        try {
+
+            Sender sender = new Sender(FCMSERVERKEY);
+
+            String title = "";
+            String body = "";
+            if(Constant.INCIDENT_STATUS_ATENTION.equals(incident.getStatus())) {
+                title = "Solicitud de atención aceptada";
+                body = "Será contactado a la brevedad";
+            }else if(Constant.INCIDENT_STATUS_CLOSED.equals(incident.getStatus())) {
+                title = "Solicitud de atención cerrada";
+                body = "Gracias por contar con nuestro servicio";
+            }
+
+            // Build Notification Payload
+            Notification notification = new Notification.Builder()
+                    .title(title)
+                    .body(body)
+//                    .clickAction(".activities.MainActivity")
                     .icon("in_support")
 //                    .color("")
                     .sound("default")

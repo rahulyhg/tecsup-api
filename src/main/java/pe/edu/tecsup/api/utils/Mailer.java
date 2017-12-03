@@ -79,4 +79,33 @@ public class Mailer {
         }
     }
 
+    @Async
+    public void sendMailAttention(String to, Incident incident){
+        log.info("sendMailAttention: " + "t:" + to + "i:" + incident);
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
+            mailMsg.setFrom(Constant.EMAIL_FROM);
+            mailMsg.setTo(to);
+            //mailMsg.setCc(customer.getEmail());
+            mailMsg.setSubject(SUBJECT + "Solicitud en atención");
+
+            String estado = "[DESCONOCIDO]";
+            if(Constant.INCIDENT_STATUS_ATENTION.equals(incident.getStatus()))
+                estado = "EN PROCESO";
+            else if(Constant.INCIDENT_STATUS_CLOSED.equals(incident.getStatus()))
+                estado = "ATENDIDO";
+
+            String text = "<p><h3>Su solicitud de atención ha cambiado de estado a '" + estado + "'</h3></p>" +
+                    "<p><b>Número:</b> " + String.format("%05d", incident.getId()) + "<br/>" +
+                    "<p><b>Asistente:</b> " + incident.getTechnical() + "<br/>" +
+                    "<p>Soporte de TI</p>";
+
+            mailMsg.setText(text, true);
+            javaMailSender.send(mimeMessage);
+        }catch (Exception e){
+            log.error(e, e);
+        }
+    }
+
 }

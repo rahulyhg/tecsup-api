@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.repositories.UserRepository;
+import pe.edu.tecsup.api.utils.Constant;
 
 import javax.transaction.Transactional;
 
@@ -25,7 +27,54 @@ public class UserService {
 
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("calling loadUserByUsername: " + username);
-        return userDao.loadUserByUsername(username);
+        User user = userDao.loadUserByUsername(username);
+
+        // Default role
+        if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ADMINISTRADOR)))
+            user.setRole(Constant.ROLE_SEVA_ADMINISTRADOR);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_PORTAL_SOPORTE)))
+            user.setRole(Constant.ROLE_PORTAL_SOPORTE);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_SECRETARIA)))
+            user.setRole(Constant.ROLE_SEVA_SECRETARIA);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DIRECTOR)))
+            user.setRole(Constant.ROLE_SEVA_DIRECTOR);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_JEFE_DEPARTAMENTO)))
+            user.setRole(Constant.ROLE_SEVA_JEFE_DEPARTAMENTO);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DOCENTE)))
+            user.setRole(Constant.ROLE_SEVA_DOCENTE);
+        else if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE)) || user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO)))
+            user.setRole(Constant.ROLE_SEVA_ESTUDIANTE);
+
+        return user;
+    }
+
+    public User loadUserByUsername(String username, String app) throws UsernameNotFoundException {
+        log.info("calling loadUserByUsername: " + username + " - app:" + app);
+        User user = userDao.loadUserByUsername(username);
+
+        // Default role
+        if(Constant.APP_TECSUP.equals(app)){
+            if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE)) || user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO)))
+                user.setRole(Constant.ROLE_SEVA_ESTUDIANTE);
+            else
+                throw new UsernameNotFoundException("No tiene el rol de estudiante");
+        }else if(Constant.APP_TECSUP_DOCENTE.equals(app)){
+            if(user.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DOCENTE)))
+                user.setRole(Constant.ROLE_SEVA_DOCENTE);
+            else
+                throw new UsernameNotFoundException("No tiene el rol de docente");
+        }else if(Constant.APP_TECSUP_SOPORTE.equals(app)){
+            if(user.getAuthorities().contains(new Role(Constant.ROLE_PORTAL_SOPORTE)))
+                user.setRole(Constant.ROLE_PORTAL_SOPORTE);
+            else
+                throw new UsernameNotFoundException("No tiene el rol de soporte");
+        }else{
+            throw new UsernameNotFoundException("Aplicación no registrada");
+        }
+
+        log.info("Default Role: " + user.getRole());
+
+        return user;
     }
 
 	public byte[] loadUserPicture(Integer id) throws Exception {

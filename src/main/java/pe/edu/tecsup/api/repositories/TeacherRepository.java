@@ -288,6 +288,9 @@ public class TeacherRepository {
             return phoneNumber;
         }catch (EmptyResultDataAccessException e){
             log.warn(e, e);
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
         }
         return null;
     }
@@ -318,6 +321,9 @@ public class TeacherRepository {
             return phoneNumber;
         }catch (EmptyResultDataAccessException e){
             log.warn(e, e);
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
         }
         return null;
     }
@@ -382,6 +388,9 @@ public class TeacherRepository {
             return phoneNumber;
         }catch (EmptyResultDataAccessException e){
             log.warn(e, e);
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
         }
         return null;
     }
@@ -440,6 +449,9 @@ public class TeacherRepository {
             return incident;
         }catch (EmptyResultDataAccessException e){
             log.warn(e, e);
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
         }
         return null;
     }
@@ -448,11 +460,11 @@ public class TeacherRepository {
         log.info("getTechnicalForNotification: " + sede);
         try {
 
-            String sql = "SELECT T.ID, GENERAL.NOMBRECLIENTE(T.ID) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(T.ID) AS NAME, \n" +
-                    "(SELECT TRIM(CORREO)||'tecsup.edu.pe' FROM PERSONAL.PER_EMPLEADO WHERE CODEMPLEADO=T.ID) AS CORREO, I.INSTANCEID\n" +
-                    "FROM API_TECHNICALS T\n" +
-                    "LEFT JOIN MOVIL.API_INSTANCES I ON I.LASTUSERID=T.ID AND I.APP='TECSUP' AND I.STATUS='1'\n" +
-                    "WHERE T.SEDE=? AND T.STATUS='1'";
+            String sql = "SELECT P.CODEMPLEADO AS ID, GENERAL.NOMBRECLIENTE(P.CODEMPLEADO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(P.CODEMPLEADO) AS NAME, TRIM(CORREO)||'@tecsup.edu.pe' AS CORREO, I.INSTANCEID\n" +
+                    "FROM PERSONAL.PER_EMPLEADO P\n" +
+                    "LEFT JOIN MOVIL.API_INSTANCES I ON I.LASTUSERID=P.CODEMPLEADO AND I.APP='TECSUP-SOPORTE' AND I.STATUS='1'\n" +
+                    "WHERE P.LUGAR=? AND P.ESACTIVO='S' \n" +
+                    "AND EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO U INNER JOIN SEGURIDAD.SEG_USUARIO_ROL R ON R.USUARIO=U.USUARIO AND R.CODROL=214 AND R.ESACTIVO='S' WHERE U.CODSUJETO=P.CODEMPLEADO AND U.ESACTIVO='S')";
 
             List<Technical> technicals = jdbcTemplate.query(sql, new RowMapper<Technical>() {
                 public Technical mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -509,8 +521,148 @@ public class TeacherRepository {
 
             return incidents;
 
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<Incident> getIncidentsByTechnical(Integer userid, String status) throws Exception {
+        log.info("getIncidentsByTechnical: userid:"+userid+" - status:"+status);
+        try{
+
+            String sql = "SELECT ID, CUSTOMERID, GENERAL.NOMBRECLIENTE(CUSTOMERID) AS CUSTOMERNAME, PHONE, SEDE, LOCATION, COMMENTS, CREATED, UPDATED, \n" +
+                    "TECHNICALID, DECODE(TECHNICALID, NULL, NULL, GENERAL.NOMBRECLIENTE(TECHNICALID)) AS TECHNICALNAME, STATUS\n" +
+                    "FROM API_INCIDENTS\n" +
+                    "WHERE TECHNICALID=? AND STATUS=?\n" +
+                    "ORDER BY ID DESC";
+
+            List<Incident> incidents = jdbcTemplate.query(sql, new RowMapper<Incident>() {
+                public Incident mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Incident incident = new Incident();
+                    incident.setId(rs.getInt("ID"));
+                    incident.setCustomerid(rs.getInt("CUSTOMERID"));
+                    incident.setCustomer(rs.getString("CUSTOMERNAME"));
+                    incident.setPhone(rs.getString("PHONE"));
+                    incident.setSede(rs.getString("SEDE"));
+                    incident.setLocation(rs.getString("LOCATION"));
+                    incident.setComments(rs.getString("COMMENTS"));
+                    incident.setCreated(rs.getTimestamp("CREATED")!=null?new Date(rs.getTimestamp("CREATED").getTime()):null);
+                    incident.setUpdated(rs.getTimestamp("UPDATED")!=null?new Date(rs.getTimestamp("UPDATED").getTime()):null);
+                    incident.setTechnicalid(rs.getInt("TECHNICALID"));
+                    if(rs.wasNull()) incident.setTechnicalid(null);
+                    incident.setTechnical(rs.getString("TECHNICALNAME"));
+                    incident.setStatus(rs.getString("STATUS"));
+                    return incident;
+                }
+            }, userid, status);
+
+            log.info("incident: " + incidents);
+
+            return incidents;
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<Incident> getAllIncidents() throws Exception {
+        log.info("getAllIncidents:");
+        try{
+
+            String sql = "SELECT ID, CUSTOMERID, GENERAL.NOMBRECLIENTE(CUSTOMERID) AS CUSTOMERNAME, PHONE, SEDE, LOCATION, COMMENTS, CREATED, UPDATED, \n" +
+                    "TECHNICALID, DECODE(TECHNICALID, NULL, NULL, GENERAL.NOMBRECLIENTE(TECHNICALID)) AS TECHNICALNAME, STATUS\n" +
+                    "FROM API_INCIDENTS\n" +
+                    "WHERE STATUS!='C'\n" +
+                    "ORDER BY ID DESC";
+
+            List<Incident> incidents = jdbcTemplate.query(sql, new RowMapper<Incident>() {
+                public Incident mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Incident incident = new Incident();
+                    incident.setId(rs.getInt("ID"));
+                    incident.setCustomerid(rs.getInt("CUSTOMERID"));
+                    incident.setCustomer(rs.getString("CUSTOMERNAME"));
+                    incident.setPhone(rs.getString("PHONE"));
+                    incident.setSede(rs.getString("SEDE"));
+                    incident.setLocation(rs.getString("LOCATION"));
+                    incident.setComments(rs.getString("COMMENTS"));
+                    incident.setCreated(rs.getTimestamp("CREATED")!=null?new Date(rs.getTimestamp("CREATED").getTime()):null);
+                    incident.setUpdated(rs.getTimestamp("UPDATED")!=null?new Date(rs.getTimestamp("UPDATED").getTime()):null);
+                    incident.setTechnicalid(rs.getInt("TECHNICALID"));
+                    if(rs.wasNull()) incident.setTechnicalid(null);
+                    incident.setTechnical(rs.getString("TECHNICALNAME"));
+                    incident.setStatus(rs.getString("STATUS"));
+                    return incident;
+                }
+            });
+
+            log.info("incident: " + incidents);
+
+            return incidents;
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public void updateIncident(Integer id, Integer technicalid, String status) throws Exception {
+        log.info("updateIncident: id:"+id+", technicalid:" + technicalid + ", status:" + status);
+        try {
+
+            String sql = "UPDATE API_INCIDENTS  SET UPDATED=SYSDATE, TECHNICALID=?, STATUS=?\n" +
+                    "WHERE ID=?";
+
+            int inserteds = jdbcTemplate.update(sql, technicalid, status, id);
+            log.info("API_INCIDENTS: Rows updateds: " + inserteds);
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public Customer getCustomer(Integer id) throws Exception {
+        log.info("getCustomer: " + id);
+        try {
+
+            String sql = "SELECT P.CODEMPLEADO, GENERAL.NOMBRECLIENTE(P.CODEMPLEADO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(P.CODEMPLEADO) AS NAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE\n" +
+                    "FROM PERSONAL.PER_EMPLEADO P\n" +
+                    "WHERE P.ESACTIVO='S' AND P.CODEMPLEADO=?";
+
+            Customer customer = jdbcTemplate.queryForObject(sql, new RowMapper<Customer>() {
+                public Customer mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Customer customer = new Customer();
+                    customer.setId(rs.getInt("CODEMPLEADO"));
+                    customer.setFullname(rs.getString("FULLNAME"));
+                    customer.setName(rs.getString("NAME"));
+                    customer.setEmail(rs.getString("CORREO"));
+                    customer.setSede(rs.getString("SEDE"));
+                    return customer;
+                }
+            }, id);
+
+            sql = "SELECT I.INSTANCEID\n" +
+                    "FROM API_INSTANCES I\n" +
+                    "WHERE I.LASTUSERID=? AND I.APP='TECSUP-SOPORTE' AND I.STATUS=1";
+
+            List<String> instancesid = jdbcTemplate.query(sql, new RowMapper<String>() {
+                public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getString("INSTANCEID");
+                }
+            }, id);
+
+            customer.setInstancesid(instancesid);
+
+            log.info("customer: " + customer);
+
+            return customer;
         }catch (EmptyResultDataAccessException e){
             log.warn(e, e);
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
         }
         return null;
     }

@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.JwtTokenService;
 import pe.edu.tecsup.api.services.UserService;
@@ -113,7 +114,7 @@ public class JwtAuthController {
 
     @PostMapping("google_access_token")
     public ResponseEntity<?> createGoogleAuthenticationToken(@RequestParam String id_token, @RequestParam String instanceid,
-                                                             @RequestParam(required = false, defaultValue = "TECSUP") String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+                                                             @RequestParam(required = false, defaultValue = Constant.APP_TECSUP) String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
         log.info("call createGoogleAuthenticationToken: google_id_token:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
@@ -156,7 +157,7 @@ public class JwtAuthController {
             log.info("Cuenta " + usuario + " pertenece a la lista blanca " + Arrays.toString(Constant.GOOGLEPLUS_ALLOW_DOMAINS));
 
             // Verificando si se encuentra registrado el usuario
-            User user = userService.loadUserByUsername(usuario);
+            User user = userService.loadUserByUsername(usuario, app);
             log.info(user);
 
             // Gmail info
@@ -189,7 +190,7 @@ public class JwtAuthController {
 
     @PostMapping("hacked_access_token")
     public ResponseEntity<?> createHackedAuthenticationToken(@RequestParam String username, @RequestParam String id_token, @RequestParam String instanceid,
-                                                             @RequestParam(required = false, defaultValue = "TECSUP") String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
+                                                             @RequestParam(required = false, defaultValue = Constant.APP_TECSUP) String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
         log.info("call createHackedAuthenticationToken: username:"+username+" - gtoken:"+id_token+" - instance:"+instanceid+" - deviceid:"+deviceid+" - manufacturer:"+manufacturer+" - model:"+model+" - device:"+device+" - kernel:"+kernel+" - version:"+version+" - sdk:"+sdk);
         try {
 
@@ -222,7 +223,7 @@ public class JwtAuthController {
             userService.validateAdmin(payload.getEmail());
 
             // Verificando si se encuentra registrado el usuario
-            User user = userService.loadUserByUsername(username);
+            User user = userService.loadUserByUsername(username, app);
             log.info(user);
 
             // Gmail info
