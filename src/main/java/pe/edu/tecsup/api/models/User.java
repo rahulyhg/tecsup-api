@@ -24,6 +24,9 @@ public class User implements UserDetails {
     private String sede;
     private Integer role;
 
+    /* PhoneNumber */
+    private PhoneNumber phoneNumber;
+
     /* Spring Security related fields*/
     private Collection<Role> authorities;
 
@@ -165,6 +168,21 @@ public class User implements UserDetails {
 
     public void setRole(Integer role) {
         this.role = role;
+    }
+
+    public PhoneNumber getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(PhoneNumber phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public boolean hasRole(Integer roleid){
+        if(authorities != null && roleid != null){
+            return authorities.contains(new Role(roleid));
+        }
+        return false;
     }
 
     @Override

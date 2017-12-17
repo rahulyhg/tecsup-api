@@ -2,7 +2,6 @@ package pe.edu.tecsup.api.repositories;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -146,6 +145,7 @@ public class TeacherRepository {
                 course.setIdteacher(record.get("codevaluador")!=null?((BigDecimal)record.get("codevaluador")).intValue():null);
                 course.setTeacher(record.get("nomevaluador")!=null?(String)record.get("nomevaluador"):null);
                 course.setPeriodo(record.get("nomperiodo")!=null?(String)record.get("nomperiodo"):null);
+                course.setMinscore(13d);
             }
 
             if(course == null)
@@ -665,6 +665,43 @@ public class TeacherRepository {
             throw e;
         }
         return null;
+    }
+
+    public List<Student> getStudentsbyCourse(Integer codcursoejec) throws Exception {
+        log.info("getStudentsbyCourse: "+codcursoejec);
+        try {
+            SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
+
+            simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API_DOCENTES").withProcedureName("ESTUDIANTESXCURSO");
+
+            SqlParameterSource in = new MapSqlParameterSource()
+                    .addValue("E_C_CODCURSOEJEC", codcursoejec);
+
+            Map<String, Object> out = simpleJdbcCall.execute(in);
+            log.info(out);
+
+            List<Map<String, Object>> recordset = (ArrayList<Map<String, Object>>) out.get("S_C_RECORSET");
+            log.info("Length of retrieved batches from database = "+recordset);
+
+            List<Student> students = new ArrayList<>();
+
+            for(Map<String, Object> record : recordset) {
+                Student student = new Student();
+                student.setCodcursoejec(record.get("CODCURSOEJEC")!=null?((BigDecimal)record.get("CODCURSOEJEC")).intValue():null);
+                student.setCodseccion(record.get("CODSECCION")!=null?((BigDecimal)record.get("CODSECCION")).intValue():null);
+                student.setNomseccion(record.get("NOMSECCION")!=null?(String)record.get("NOMSECCION"):null);
+                student.setId(record.get("CODALUMNO")!=null?((BigDecimal)record.get("CODALUMNO")).intValue():null);
+                student.setNombres(record.get("NOMALUMNO")!=null?(String)record.get("NOMALUMNO"):null);
+                students.add(student);
+            }
+
+            log.info("students: " + students);
+
+            return students;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
     }
 
 }

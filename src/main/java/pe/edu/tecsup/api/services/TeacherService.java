@@ -108,4 +108,9 @@ public class TeacherService {
         return teacherRepository.getCustomer(id);
     }
 
+    public List<Student> getStudentsbyCourse(Integer codcursoejec) throws Exception {
+        log.info("getStudentsbyCourse: " + codcursoejec);
+        return teacherRepository.getStudentsbyCourse(codcursoejec);
+    }
+
 }

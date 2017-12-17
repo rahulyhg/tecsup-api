@@ -12,15 +12,14 @@ import pe.edu.tecsup.api.remotes.twilio.TwilioService;
 import pe.edu.tecsup.api.remotes.twilio.TwilioServiceGenerator;
 import pe.edu.tecsup.api.remotes.twilio.models.ResponseChecking;
 import pe.edu.tecsup.api.remotes.twilio.models.ResponseVerification;
+import pe.edu.tecsup.api.services.StudentService;
 import pe.edu.tecsup.api.services.TeacherService;
 import pe.edu.tecsup.api.utils.Constant;
 import pe.edu.tecsup.api.utils.Mailer;
 import pe.edu.tecsup.api.utils.Notifier;
 import retrofit2.Response;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping("/api/teacher")
@@ -30,6 +29,9 @@ public class TeacherController {
 
 	@Autowired
 	private TeacherService teacherService;
+
+    @Autowired
+    private StudentService studentervice;
 
     @Autowired
     private Mailer mailer;
@@ -136,8 +138,8 @@ public class TeacherController {
         log.info("call insertPhoneNumber: user:"+user+" - instanceid:"+instanceid+" - countrycode:"+countrycode+" - phonenumber:"+phonenumber);
         try {
 
-            if(user.getRole() != Constant.ROLE_SEVA_DOCENTE)
-                throw new Exception("Acceso restringido");
+            if(!user.hasRole(Constant.ROLE_SEVA_DOCENTE))
+                throw new Exception("Acceso no autorizado a su rol");
 
             PhoneNumber phoneNumber = teacherService.getPhoneNumber(instanceid);
 
@@ -180,8 +182,8 @@ public class TeacherController {
         log.info("call activatePhoneNumber: user:"+user+" - id:"+id + " - code:" + code);
         try {
 
-            if(user.getRole() != Constant.ROLE_SEVA_DOCENTE)
-                throw new Exception("Acceso restringido");
+            if(!user.hasRole(Constant.ROLE_SEVA_DOCENTE))
+                throw new Exception("Acceso no autorizado a su rol");
 
             PhoneNumber phoneNumber = teacherService.getPhoneNumber(id);
             log.info(phoneNumber);
@@ -220,9 +222,6 @@ public class TeacherController {
     public ResponseEntity<?> saveIncident(@AuthenticationPrincipal User user, @RequestParam String instanceid, @RequestParam String sede, @RequestParam String location) throws Exception {
         log.info("call saveIncident: user:"+user+" - instanceid:" + instanceid + " - sede:" + sede + " - location:" + location);
         try {
-
-            if(user == null)
-                throw new IllegalAccessException("Acceso no Autorizado");
 
             PhoneNumber phoneNumber = teacherService.getActivedPhoneNumber(instanceid);
             log.info(phoneNumber);
@@ -305,7 +304,6 @@ public class TeacherController {
                 throw new Exception("El ticket ya fue tomado por " + incident.getTechnical());
 
             teacherService.updateIncident(id, user.getId(), status);
-
             incident = teacherService.getIncident(id);
 
             // Notification
@@ -327,6 +325,149 @@ public class TeacherController {
             log.info(incident);
 
             return ResponseEntity.ok(incident);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("courses/{id}/detail")
+    public ResponseEntity<?> getCourseDetail(@AuthenticationPrincipal User user, @PathVariable Integer id) throws Exception{
+        log.info("call getCourseDetail: user:" + user + " - courseid:" + id);
+        try {
+
+            CourseDetail courseDetail = new CourseDetail();
+
+            List<Student> students = teacherService.getStudentsbyCourse(id);
+            log.info("students: " + students);
+            courseDetail.setStudents(students);
+
+            for (Student student : students) {
+                log.info("information by: " + student);
+
+                Score scsore = studentervice.getScore(student.getId(), id);
+                log.info("scsore: " + scsore);
+                student.setScore(scsore);
+
+                Attendance attendance = studentervice.getAttendance(student.getId(), id);
+                log.info("attendance: " + attendance);
+                student.setAttendance(attendance);
+
+            }
+
+            Course course = teacherService.getSections(id);
+            log.info("course: " + course);
+            courseDetail.setCourse(course);
+
+            Set<String> assignmentsUnsorted = new HashSet<>();
+            for (Student student : students) {
+                Score score = student.getScore();
+
+                if(score.getTheoId() != null)
+                    assignmentsUnsorted.add("1" + score.getTheoTitle());
+
+                List<Score.Item> theos = score.getTheos();
+                for (Score.Item item : theos) {
+                    item.setTitle(item.getTitle() + " de Aula");
+                    assignmentsUnsorted.add("1" + item.getTitle());
+                }
+
+                if(score.getLabId() != null)
+                    assignmentsUnsorted.add("2" + score.getLabTitle());
+
+                List<Score.Item> labs = score.getLabs();
+                for (Score.Item item : labs) {
+                    item.setTitle(item.getTitle() + " de Laboratorio");
+                    assignmentsUnsorted.add("2" + item.getTitle());
+                }
+
+                if(score.getWorkId() != null)
+                    assignmentsUnsorted.add("3" + score.getWorkTitle());
+
+                List<Score.Item> works = score.getWorks();
+                for (Score.Item item : works) {
+                    item.setTitle(item.getTitle() + " de Taller");
+                    assignmentsUnsorted.add("3" + item.getTitle());
+                }
+
+                if(score.getPartialId() != null)
+                    assignmentsUnsorted.add("4" + score.getPartialTitle());
+
+                if(score.getFinalId() != null)
+                    assignmentsUnsorted.add("5" + score.getFinalTitle());
+
+            }
+
+            assignmentsUnsorted.add("6Promedio Móvil");
+
+            List<String> assignmentsSorted = new ArrayList<>(assignmentsUnsorted);
+            Collections.sort(assignmentsSorted);
+
+            List<String> assignments = new ArrayList<>();
+            for (String title : assignmentsSorted) {
+                assignments.add(title.substring(1, title.length()));
+            }
+
+            log.info("assignmentsUnsorted: " + assignments);
+            courseDetail.setAssignments(assignments);
+
+            log.info("courseDetail: " + courseDetail);
+
+            return ResponseEntity.ok(courseDetail);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("courses/{courseid}/students/{studentid}/scores")
+    public ResponseEntity<?> getScore(@AuthenticationPrincipal User user, @PathVariable Integer courseid, @PathVariable Integer studentid) throws Exception{
+        log.info("call getScore: user:" + user + " - courseid:" + courseid + " - studentid:" + studentid);
+        try {
+
+            if(!user.hasRole(Constant.ROLE_SEVA_DOCENTE))
+                throw new Exception("Acceso no autorizado a su rol");
+
+            Score scsore = studentervice.getScore(studentid, courseid);
+            log.info("scsore: " + scsore);
+
+            return ResponseEntity.ok(scsore);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("courses/{courseid}/students/{studentid}/attendances")
+    public ResponseEntity<?> getAttendance(@AuthenticationPrincipal User user, @PathVariable Integer courseid, @PathVariable Integer studentid) throws Exception{
+        log.info("call getAttendance: user:" + user + " - courseid:" + courseid + " - studentid:" + studentid);
+        try {
+
+            if(!user.hasRole(Constant.ROLE_SEVA_DOCENTE))
+                throw new Exception("Acceso no autorizado a su rol");
+
+            Attendance attendance = studentervice.getAttendance(studentid, courseid);
+            log.info("attendance: " + attendance);
+
+            return ResponseEntity.ok(attendance);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("students/{id}/history")
+    public ResponseEntity<?> getHistory(@AuthenticationPrincipal User user, @PathVariable Integer id) throws Exception{
+        log.info("call getHistory: user:" + user + " - id:" + id);
+        try {
+
+            if(!user.hasRole(Constant.ROLE_SEVA_DOCENTE))
+                throw new Exception("Acceso no autorizado a su rol");
+
+            History history = studentervice.getHistory(id);
+            log.info("history: " + history);
+
+            return ResponseEntity.ok(history);
         }catch (Throwable e){
             log.error(e, e);
             throw e;

@@ -14,6 +14,7 @@ public class Course {
     private Integer idteacher;
     private String teacher;
     private List<Section> sections;
+    private Double minscore;
 
     public Long getId() {
         return id;
@@ -71,6 +72,14 @@ public class Course {
         this.sections = sections;
     }
 
+    public Double getMinscore() {
+        return minscore;
+    }
+
+    public void setMinscore(Double minscore) {
+        this.minscore = minscore;
+    }
+
     @Override
     public String toString() {
         return "Course{" +
@@ -81,6 +90,7 @@ public class Course {
                 ", idteacher=" + idteacher +
                 ", teacher='" + teacher + '\'' +
                 ", sections=" + sections +
+                ", minscore=" + minscore +
                 '}';
     }
 }

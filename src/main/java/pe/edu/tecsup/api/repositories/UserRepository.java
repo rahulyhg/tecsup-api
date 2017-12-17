@@ -87,10 +87,10 @@ public class UserRepository {
                         "AND REGEXP_LIKE(trim(U.USUARIO), '^[[:alpha:]]+$') " +
                         "AND (U.USUARIO = ?    OR P.CORREO = ?) \n" + // OR CORREO = ? casos usuario!=correo (mchavez!=mchavezl)
                         "UNION ALL \n" +
-                        "SELECT CODALUMNO AS ID, TRIM(CODCARNET) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
+                        "SELECT CODALUMNO AS ID, LOWER(TRIM(CODCARNET)) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
                         "FROM DOCENCIA.DOC_ALUMNO A \n" +
                         "WHERE A.CONDICION NOT IN ('P', 'X') \n" +
-                        "AND (A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = ?) "; // OR CODCARNET = ? hack!
+                        "AND (A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = UPPER(?)) "; // OR CODCARNET = ? hack!
 
             User user = jdbcTemplate.queryForObject(sql, new RowMapper<User>() {
                 public User mapRow(ResultSet rs, int rowNum) throws SQLException {

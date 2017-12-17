@@ -360,7 +360,10 @@ public class StudentRepository {
                     mobileScore += score.getFinalScore() * score.getFinalWeight() / 100;
                 }
 
-                score.setScore(Math.round(mobileScore*100d)/100d);
+                mobileScore = (double) Math.round(mobileScore);
+                log.info("mobileScore: " + mobileScore);
+
+                score.setScore(record.get("notapromedio")!=null?((BigDecimal)record.get("notapromedio")).doubleValue():mobileScore);
                 score.setFormula(record.get("formula")!=null?(String)record.get("formula"):null);
 
                 // Theos

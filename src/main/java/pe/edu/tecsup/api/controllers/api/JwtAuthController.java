@@ -18,9 +18,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.tecsup.api.models.PhoneNumber;
 import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.JwtTokenService;
+import pe.edu.tecsup.api.services.TeacherService;
 import pe.edu.tecsup.api.services.UserService;
 import pe.edu.tecsup.api.utils.Constant;
 
@@ -41,6 +43,9 @@ public class JwtAuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TeacherService teacherService;
 
     @PostMapping("access_token")
     public ResponseEntity<?> createAuthenticationToken(@RequestParam String username, @RequestParam String password) throws Exception {
@@ -166,6 +171,10 @@ public class JwtAuthController {
             user.setEmail(payload.getEmail());
             user.setPicture((String) payload.get("picture"));
 
+            // Get PhoneNumber
+            PhoneNumber phoneNumber = teacherService.getPhoneNumber(instanceid);
+            user.setPhoneNumber(phoneNumber);
+
             // Generate Token from User
             String token = jwtTokenService.generateToken(user.getUsername());
             log.info("Token: " + token);
@@ -231,6 +240,10 @@ public class JwtAuthController {
             user.setName(user.getFullname());
             user.setEmail(user.getEmail());
             user.setPicture((payload.get("picture") != null) ? payload.get("picture").toString() : null);
+
+            // Get PhoneNumber
+            PhoneNumber phoneNumber = teacherService.getPhoneNumber(instanceid);
+            user.setPhoneNumber(phoneNumber);
 
             // Generate Token from User
             String token = jwtTokenService.generateToken(user.getUsername());
