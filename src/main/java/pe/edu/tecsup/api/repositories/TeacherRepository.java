@@ -145,7 +145,7 @@ public class TeacherRepository {
                 course.setIdteacher(record.get("codevaluador")!=null?((BigDecimal)record.get("codevaluador")).intValue():null);
                 course.setTeacher(record.get("nomevaluador")!=null?(String)record.get("nomevaluador"):null);
                 course.setPeriodo(record.get("nomperiodo")!=null?(String)record.get("nomperiodo"):null);
-                course.setMinscore(13d);
+                course.setMinscore(record.get("notaminima")!=null?((BigDecimal)record.get("notaminima")).doubleValue():null);
             }
 
             if(course == null)

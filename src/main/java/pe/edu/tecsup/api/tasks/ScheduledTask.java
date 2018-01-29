@@ -42,6 +42,14 @@ public class ScheduledTask {
         log.info(new Date() + " - keep alive ScheduledTask ...");
     }
 
+    @Scheduled(fixedDelay = Long.MAX_VALUE)
+    public void firsttime(){
+        log.info("firsttime init ...");
+
+        processingWeatherUpdating();
+
+    }
+
     @Scheduled(cron="0 0 8 * * *")
     public void processingDealyDebts() {
         log.info("processingDealyDebts ...");

@@ -33,22 +33,22 @@ public class CommonController {
 		return ResponseEntity.ok(seats);
 	}
 
-	@GetMapping("/seats/{seat}/majors")
-	public ResponseEntity<?> majors(@PathVariable String seat) throws Exception {
+	@GetMapping({"/seats/{seat}/majors", "/seats//majors"})
+	public ResponseEntity<?> majors(@PathVariable(required = false) String seat) throws Exception {
 		log.info("calling majors: " + seat);
 		List<Major> majors = commonService.listMajors(seat);
 		return ResponseEntity.ok(majors);
 	}
 
-	@GetMapping("/seats/{seat}/majors/{majorid}/cicles")
-	public ResponseEntity<?> cicles(@PathVariable String seat, @PathVariable Integer majorid) throws Exception {
+	@GetMapping({"/seats/{seat}/majors/{majorid}/cicles", "/seats/{seat}/majors//cicles", "/seats//majors/{majorid}/cicles", "/seats//majors//cicles"})
+	public ResponseEntity<?> cicles(@PathVariable(required = false) String seat, @PathVariable(required = false) Integer majorid) throws Exception {
 		log.info("calling cicles: " + seat + " - " + majorid);
 		List<Cicle> cicles = commonService.listCicles(seat, majorid);
 		return ResponseEntity.ok(cicles);
 	}
 
-	@GetMapping("/seats/{seat}/majors/{majorid}/cicles/{cicleid}/sections")
-	public ResponseEntity<?> sections(@PathVariable String seat, @PathVariable Integer majorid, @PathVariable Integer cicleid) throws Exception {
+	@GetMapping({"/seats/{seat}/majors/{majorid}/cicles/{cicleid}/sections", "/seats/{seat}/majors/{majorid}/cicles//sections", "/seats/{seat}/majors//cicles/{cicleid}/sections", "/seats//majors/{majorid}/cicles/{cicleid}/sections", "/seats/{seat}/majors//cicles//sections", "/seats//majors//cicles/{cicleid}/sections", "/seats//majors/{majorid}/cicles//sections", "/seats//majors//cicles//sections"})
+	public ResponseEntity<?> sections(@PathVariable(required = false) String seat, @PathVariable(required = false) Integer majorid, @PathVariable(required = false) Integer cicleid) throws Exception {
 		log.info("calling sections: " + seat + " - " + majorid + " - " + cicleid);
 		List<Section> sections = commonService.listSections(seat, majorid, cicleid);
 		return ResponseEntity.ok(sections);
