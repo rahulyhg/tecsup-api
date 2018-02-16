@@ -201,7 +201,7 @@ public class Notifier {
             // Build Notification Payload
             Notification notification = new Notification.Builder()
                     .title("¡Nueva notificación recibida!")
-                    .body(from + " dice: '" + content)
+                    .body(from + " dice: " + content)
                     .clickAction(".activities.MainActivity")    // https://stackoverflow.com/questions/37711082/how-to-handle-notification-when-app-in-background-in-firebase#42279260
                     .icon("in_notification")
 //                    .color("")

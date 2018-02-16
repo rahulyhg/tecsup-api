@@ -62,7 +62,7 @@ public class Mailer {
             MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
             mailMsg.setFrom(Constant.EMAIL_FROM);
             mailMsg.setTo(to);
-            //mailMsg.setCc(customer.getEmail());
+            mailMsg.setCc(customer.getEmail());
             mailMsg.setSubject(SUBJECT + "Nueva solicitud de atención");
 
             String text = "<p><h3>Solicitud de atención a incidente generada</h3></p>" +

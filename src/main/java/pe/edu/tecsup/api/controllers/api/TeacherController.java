@@ -1,6 +1,7 @@
 package pe.edu.tecsup.api.controllers.api;
 
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import pe.edu.tecsup.api.remotes.twilio.TwilioService;
 import pe.edu.tecsup.api.remotes.twilio.TwilioServiceGenerator;
 import pe.edu.tecsup.api.remotes.twilio.models.ResponseChecking;
 import pe.edu.tecsup.api.remotes.twilio.models.ResponseVerification;
+import pe.edu.tecsup.api.services.AlertService;
 import pe.edu.tecsup.api.services.StudentService;
 import pe.edu.tecsup.api.services.TeacherService;
 import pe.edu.tecsup.api.utils.Constant;
@@ -32,6 +34,9 @@ public class TeacherController {
 
     @Autowired
     private StudentService studentervice;
+
+    @Autowired
+    private AlertService alertService;
 
     @Autowired
     private Mailer mailer;
@@ -245,9 +250,9 @@ public class TeacherController {
             }
 
             // Test
-            emails.clear();
+//            emails.clear();
 //            registrationIds.clear();
-            emails.add("ebenites@tecsup.edu.pe");
+//            emails.add("ebenites@tecsup.edu.pe");
 //            registrationIds.add("ccF3KPsH3VM:APA91bHr-HP1o_mBAR4l52NoqlclGwfxfono-Nvlb3kghdTPAY-0Rrev5o6dvUheELJtar4yBUq5XfJcucUkYQdl1bHhoHB1TO4UGkXpAUCVS7_Ja_ChKsMw_rMr_3FwfJjkLfiyyWzZ");
             // End Test
 
@@ -312,7 +317,7 @@ public class TeacherController {
 
             // Test
 //            customer.getInstancesid().clear();
-            customer.setEmail("ebenites@tecsup.edu.pe");
+//            customer.setEmail("ebenites@tecsup.edu.pe");
 //            customer.getInstancesid().add("ccF3KPsH3VM:APA91bHr-HP1o_mBAR4l52NoqlclGwfxfono-Nvlb3kghdTPAY-0Rrev5o6dvUheELJtar4yBUq5XfJcucUkYQdl1bHhoHB1TO4UGkXpAUCVS7_Ja_ChKsMw_rMr_3FwfJjkLfiyyWzZ");
             // End Test
 
@@ -468,6 +473,70 @@ public class TeacherController {
             log.info("history: " + history);
 
             return ResponseEntity.ok(history);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("sections")
+    public ResponseEntity<?> getSections(@AuthenticationPrincipal User user) throws Exception{
+        log.info("call getSections: user:" + user);
+        try {
+
+            List<Section> sections = teacherService.getSectionsByTeacher(user.getId());
+            log.info("sections: " + sections);
+
+            return ResponseEntity.ok(sections);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @PostMapping("alerts")
+    public ResponseEntity<?> saveAlert(@AuthenticationPrincipal User user, @RequestParam String content, @RequestParam(value = "secciones[]") Integer[] secciones) throws Exception {
+        log.info("calling saveAlert " + user + " - content:" + content + " - secciones:" + secciones);
+        try{
+
+            List<Student> students = teacherService.saveAlert(user.getId(), content, secciones);
+
+            List<String> emails = new ArrayList<>();
+            List<String> registrationIds = new ArrayList<>();
+            for (Student student : students){
+                if(student.getCorreo() != null)
+                    emails.add(student.getCorreo());
+                if(student.getInstanceid() != null)
+                    registrationIds.add(student.getInstanceid());
+            }
+
+            // Test
+            //emails.clear();
+            //registrationIds.clear();
+            //emails.add("ebenites@tecsup.edu.pe");
+            //registrationIds.add("fehgvgOZlok:APA91bEC3BWilHwnh9dOu-Lr1ahoVx6Q2CWwCIK9zz2EOg6_mMJjZQg3kLWMM6ps0VWYUi3PMxyJOnPtbzhHxn3QN0MViXjdP5kgNGPqQV_yVE4nem0KK_VpsPpoE4Tx_OIGrT3AkRnK");
+            // End Test
+
+            // Mailing
+            mailer.sendMailByNotification(emails.toArray(new String[emails.size()]), content);
+
+            // Notification
+            notifier.notifyAlert(registrationIds, user.getName(), content);
+
+            return ResponseEntity.ok(APIMessage.create("Alerta enviada satisfatoriamente"));
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("alerts")
+    public ResponseEntity<?> getAlerts(@AuthenticationPrincipal User user) throws Exception {
+        log.info("calling getAlerts " + user);
+        try{
+            List<Alert> alerts = alertService.listBySender(user.getId());
+
+            return ResponseEntity.ok(alerts);
         }catch (Throwable e){
             log.error(e, e);
             throw e;

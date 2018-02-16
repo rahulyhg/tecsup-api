@@ -26,7 +26,7 @@ public class AlertRepository {
         log.info("listByStudent("+id+")");
         try {
 
-            String sql = "select a.id, general.nombrecliente(a.senderid) sender, a.content, to_char(a.senddate, 'dd-mm-yyyy hh24:mi') senddate, v.viewed \n" +
+            String sql = "select a.id, general.nombrecortocliente(a.senderid) sender, a.content, to_char(a.senddate, 'dd-mm-yyyy hh24:mi') senddate, v.viewed \n" +
                     "from api_alerts a\n" +
                     "inner join api_alerts_viewers v on v.alertid=a.id\n" +
                     "where a.deleted=0 and v.userid=?\n" +
@@ -58,7 +58,7 @@ public class AlertRepository {
         log.info("listBySender("+id+")");
         try {
 
-            String sql = "select a.id, general.nombrecliente(a.senderid) sender, receiver, a.content, to_char(a.senddate, 'dd-mm-yyyy hh24:mi') senddate\n" +
+            String sql = "select a.id, general.nombrecortocliente(a.senderid) sender, receiver, a.content, to_char(a.senddate, 'dd-mm-yyyy hh24:mi') senddate\n" +
                     "from api_alerts a\n" +
                     "where a.deleted=0 and a.senderid=?\n" +
                     "order by a.senddate desc";
@@ -71,6 +71,7 @@ public class AlertRepository {
                     alert.setTo(rs.getString("receiver"));
                     alert.setContent(rs.getString("content"));
                     alert.setDate(rs.getString("senddate"));
+                    alert.setViewed(true);
                     return alert;
                 }
             }, id);

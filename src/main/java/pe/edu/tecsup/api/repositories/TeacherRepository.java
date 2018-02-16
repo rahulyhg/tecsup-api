@@ -6,9 +6,11 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.thymeleaf.util.StringUtils;
 import pe.edu.tecsup.api.models.*;
 import pe.edu.tecsup.api.utils.ColorPalette;
 import pe.edu.tecsup.api.utils.Constant;
@@ -16,10 +18,7 @@ import pe.edu.tecsup.api.utils.Constant;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class TeacherRepository {
@@ -698,6 +697,128 @@ public class TeacherRepository {
             log.info("students: " + students);
 
             return students;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<Section> getSectionsByTeacher(Integer id) throws Exception {
+        log.info("getSectionsByTeacher("+id+")");
+        try {
+
+            String sql = "SELECT DISTINCT NP.CODSECCION, C.CODCURSOEJEC, C.CODCURSO, P.CODIGO AS CODPERIODO, \n" +
+                    "'[' || P.SEDE || '-' || REPLACE(P.NOMBRE, ' ', '') || '] ' AS NOMPERIODO, C.DESCRIPCION AS NOMCURSO,\n" +
+                    "(SELECT UPPER(NOMCORTO) FROM COMERCIAL.COM_PRODUCTO WHERE CODIGO=C.CODCURSO) AS NOMCURSOCORTO,\n" +
+                    "TRIM(S.DESCRIPCION) || ' - ' || C.CODCICLO AS NOMSECCION\n" +
+                    "FROM EVALUACION.EVA_DEF_NRO_EVAL_PARCIALES NP\n" +
+                    "INNER JOIN EVALUACION.EVA_V_CURSOS C ON C.CODCURSOEJEC=NP.CODCURSOEJEC AND C.SITUACIONREGISTRO='A'\n" +
+                    "INNER JOIN EVALUACION.EVA_CURSO_PERIODO CP ON CP.CODCURSOEJEC=C.CODCURSOEJEC\n" +
+                    "INNER JOIN GENERAL.GEN_PERIODO P ON P.CODIGO = CP.CODPERIODO --AND P.ESTADO = 1 -- EVA_V_PERIODO los profes abren y cierra en cualquier momento\n" +
+                    "INNER JOIN EVALUACION.EVA_V_SECCION S ON S.CODSECCION=NP.CODSECCION\n" +
+                    "WHERE NP.CODEVALUADOR = ?\n" +
+                    "ORDER BY NOMPERIODO, NOMCURSO, NOMSECCION";
+
+            List<Section> sections = jdbcTemplate.query(sql, new RowMapper<Section>() {
+                public Section mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Section section = new Section();
+                    section.setId(rs.getInt("CODSECCION"));
+                    section.setName(rs.getString("NOMPERIODO") + " " + rs.getString("NOMSECCION") + "\n" + rs.getString("NOMCURSOCORTO") );
+                    return section;
+                }
+            }, id);
+
+            log.info("sections: " + sections);
+
+            return sections;
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public List<Student> saveAlert(Integer senderid, String content, Integer[] codsecciones) throws Exception {
+        log.info("saveAlert("+senderid+":"+content+", "+codsecciones+")");
+        try {
+
+            String sql = "SELECT DISTINCT --NP.CODSECCION, C.CODCURSOEJEC, C.CODCURSO, P.CODIGO AS CODPERIODO, \n" +
+                    "--'[' || P.SEDE || '-' || REPLACE(P.NOMBRE, ' ', '') || '] ' AS NOMPERIODO, C.DESCRIPCION AS NOMCURSO,\n" +
+                    "--(SELECT UPPER(NOMCORTO) FROM COMERCIAL.COM_PRODUCTO WHERE CODIGO=C.CODCURSO) AS NOMCURSOCORTO,\n" +
+                    "TRIM(S.DESCRIPCION) || ' - ' || C.CODCICLO AS NOMSECCION\n" +
+                    "FROM EVALUACION.EVA_DEF_NRO_EVAL_PARCIALES NP\n" +
+                    "INNER JOIN EVALUACION.EVA_V_CURSOS C ON C.CODCURSOEJEC=NP.CODCURSOEJEC AND C.SITUACIONREGISTRO='A'\n" +
+                    "INNER JOIN EVALUACION.EVA_CURSO_PERIODO CP ON CP.CODCURSOEJEC=C.CODCURSOEJEC\n" +
+                    "INNER JOIN GENERAL.GEN_PERIODO P ON P.CODIGO = CP.CODPERIODO --AND P.ESTADO = 1 -- EVA_V_PERIODO los profes abren y cierra en cualquier momento\n" +
+                    "INNER JOIN EVALUACION.EVA_V_SECCION S ON S.CODSECCION=NP.CODSECCION\n" +
+                    "WHERE NP.CODSECCION in (:codsecciones)\n" +
+                    "ORDER BY 1";
+
+            MapSqlParameterSource parameters = new MapSqlParameterSource();
+            parameters.addValue("codsecciones", Arrays.asList(codsecciones));
+
+            NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+            List<String> secciones = namedParameterJdbcTemplate.query(sql, parameters, new RowMapper<String>() {
+                public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getString("NOMSECCION");
+                }
+            });
+
+            String fromlabel = StringUtils.join(secciones, ",");
+            log.info("fromlabel: " + fromlabel);
+
+            sql = "insert into api_alerts (id, senderid, content, receiver, senddate) values(seq_alerts.nextval, ?, ?, ?, sysdate)";
+
+            int inserteds = jdbcTemplate.update(sql, senderid, content, fromlabel);
+            log.info("Instances: Rows inserteds api_alerts: " + inserteds);
+
+            sql = "select distinct ca.codalumno, docencia.carnet(ca.codalumno) as carnet, general.nombrecliente(ca.codalumno) as nombres, (select correo from docencia.doc_alumno where codalumno=ca.codalumno) as correo, I.INSTANCEID\n" +
+                    "from evaluacion.eva_v_curso_alumno ca\n" +
+                    "LEFT JOIN MOVIL.API_INSTANCES I ON I.LASTUSERID=CA.CODALUMNO AND I.APP='TECSUP' AND I.STATUS='1'\n" +
+                    "where ca.seccion in (:codsecciones)";// +
+//                    "union\n" +
+//                    "select 46694, '123456', 'Test User', 'ebenites@tecsup.edu.pe', 'foOs3EBDKbU:APA91bHQ8gYQCzCGoOVoE6-A5V5pdFosheZ3BH2xb3dlAr2DZAap93tx8lHU-198eYDQup24L88N6fN8W1dkgZw_FcEBCyHqokcJ4H56ixQpiizzoFxZN79ZdQzW9Py_EX1s2VZMoWdk' FROM DUAL\n";
+
+            parameters = new MapSqlParameterSource();
+            parameters.addValue("codsecciones", Arrays.asList(codsecciones));
+
+            namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+            List<Student> students = namedParameterJdbcTemplate.query(sql, parameters, new RowMapper<Student>() {
+                public Student mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Student student = new Student();
+                    student.setId(rs.getInt("codalumno"));
+                    student.setCarnet(rs.getString("carnet"));
+                    student.setNombres(rs.getString("nombres"));
+                    student.setCorreo(rs.getString("correo"));
+                    student.setInstanceid(rs.getString("INSTANCEID"));
+                    return student;
+                }
+            });
+
+            log.info("students: " + students);
+
+            Set<Integer> studentids = new HashSet<>();  // Eliminar ids repetidos con Set collections
+            for (Student student : students) {
+                log.info("student:" + student);
+                studentids.add(student.getId());
+            }
+
+            log.info("studentids: " + studentids);
+
+            for (Integer studentid : studentids) {
+                log.info("studentid:" + studentid);
+
+                sql = "insert into api_alerts_viewers (alertid, userid) values(seq_alerts.currval, ?)";
+
+                inserteds = jdbcTemplate.update(sql, studentid);
+                log.info("Instances: Rows inserteds api_alerts_viewers: " + inserteds);
+
+            }
+
+            return students;
+
         }catch (Exception e){
             log.error(e, e);
             throw e;

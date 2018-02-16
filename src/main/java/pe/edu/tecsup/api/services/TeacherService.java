@@ -113,4 +113,14 @@ public class TeacherService {
         return teacherRepository.getStudentsbyCourse(codcursoejec);
     }
 
+    public List<Section> getSectionsByTeacher(Integer id) throws Exception {
+        log.info("getSectionsByTeacher(" + id + ")");
+        return teacherRepository.getSectionsByTeacher(id);
+    }
+
+    public List<Student> saveAlert(Integer senderid, String content, Integer[] codsecciones) throws Exception {
+        log.info("saveAlert(" + senderid + ":" + content + ", " + codsecciones + ")");
+        return teacherRepository.saveAlert(senderid, content, codsecciones);
+    }
+
 }
