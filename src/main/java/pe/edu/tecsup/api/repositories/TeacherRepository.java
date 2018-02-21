@@ -707,16 +707,28 @@ public class TeacherRepository {
         log.info("getSectionsByTeacher("+id+")");
         try {
 
-            String sql = "SELECT DISTINCT NP.CODSECCION, C.CODCURSOEJEC, C.CODCURSO, P.CODIGO AS CODPERIODO, \n" +
-                    "'[' || P.SEDE || '-' || REPLACE(P.NOMBRE, ' ', '') || '] ' AS NOMPERIODO, C.DESCRIPCION AS NOMCURSO,\n" +
-                    "(SELECT UPPER(NOMCORTO) FROM COMERCIAL.COM_PRODUCTO WHERE CODIGO=C.CODCURSO) AS NOMCURSOCORTO,\n" +
-                    "TRIM(S.DESCRIPCION) || ' - ' || C.CODCICLO AS NOMSECCION\n" +
-                    "FROM EVALUACION.EVA_DEF_NRO_EVAL_PARCIALES NP\n" +
-                    "INNER JOIN EVALUACION.EVA_V_CURSOS C ON C.CODCURSOEJEC=NP.CODCURSOEJEC AND C.SITUACIONREGISTRO='A'\n" +
-                    "INNER JOIN EVALUACION.EVA_CURSO_PERIODO CP ON CP.CODCURSOEJEC=C.CODCURSOEJEC\n" +
-                    "INNER JOIN GENERAL.GEN_PERIODO P ON P.CODIGO = CP.CODPERIODO --AND P.ESTADO = 1 -- EVA_V_PERIODO los profes abren y cierra en cualquier momento\n" +
-                    "INNER JOIN EVALUACION.EVA_V_SECCION S ON S.CODSECCION=NP.CODSECCION\n" +
-                    "WHERE NP.CODEVALUADOR = ?\n" +
+            // Query SEVA
+//            String sql = "SELECT DISTINCT NP.CODSECCION, C.CODCURSOEJEC, C.CODCURSO, P.CODIGO AS CODPERIODO, \n" +
+//                    "'[' || P.SEDE || '-' || REPLACE(P.NOMBRE, ' ', '') || '] ' AS NOMPERIODO, C.DESCRIPCION AS NOMCURSO,\n" +
+//                    "(SELECT UPPER(NOMCORTO) FROM COMERCIAL.COM_PRODUCTO WHERE CODIGO=C.CODCURSO) AS NOMCURSOCORTO,\n" +
+//                    "TRIM(S.DESCRIPCION) || ' - ' || C.CODCICLO AS NOMSECCION\n" +
+//                    "FROM EVALUACION.EVA_DEF_NRO_EVAL_PARCIALES NP\n" +
+//                    "INNER JOIN EVALUACION.EVA_V_CURSOS C ON C.CODCURSOEJEC=NP.CODCURSOEJEC AND C.SITUACIONREGISTRO='A'\n" +
+//                    "INNER JOIN EVALUACION.EVA_CURSO_PERIODO CP ON CP.CODCURSOEJEC=C.CODCURSOEJEC\n" +
+//                    "INNER JOIN GENERAL.GEN_PERIODO P ON P.CODIGO = CP.CODPERIODO AND P.ESTADO = 1 -- EVA_V_PERIODO los profes abren y cierra en cualquier momento\n" +
+//                    "INNER JOIN EVALUACION.EVA_V_SECCION S ON S.CODSECCION=NP.CODSECCION\n" +
+//                    "WHERE NP.CODEVALUADOR = ?\n" +
+//                    "ORDER BY NOMPERIODO, NOMCURSO, NOMSECCION";
+
+            // Query Docencia
+            String sql = "SELECT DISTINCT H.CODSECCION, NULL AS CODCURSOEJEC, H.CODIGOCUR AS CODCURSO, P.CODIGO AS CODPERIODO, \n" +
+                    "'[' || P.SEDE || '-' || REPLACE(P.NOMBRE, ' ', '') || '] ' AS NOMPERIODO, \n" +
+                    "C.NOMBRE AS NOMCURSO, UPPER(NOMCORTO) AS NOMCURSOCORTO,\n" +
+                    "DOCENCIA.NOMCORTOESPECI(H.CODESPECIALIDAD) || ' ' || H.CODGRP || ' - ' || H.NUMCIC AS NOMSECCION\n" +
+                    "FROM DOCENCIA.HORDEF H\n" +
+                    "INNER JOIN GENERAL.GEN_PERIODO P ON P.CODIGO = H.CODPERIODO AND P.ESTADO = 1\n" +
+                    "INNER JOIN COMERCIAL.COM_PRODUCTO C ON C.CODIGO=H.CODIGOCUR\n" +
+                    "WHERE CODEVALUADOR = ?\n" +
                     "ORDER BY NOMPERIODO, NOMCURSO, NOMSECCION";
 
             List<Section> sections = jdbcTemplate.query(sql, new RowMapper<Section>() {
