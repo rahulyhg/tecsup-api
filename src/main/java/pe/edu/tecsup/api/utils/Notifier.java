@@ -23,8 +23,8 @@ public class Notifier {
     private String FCMSERVERKEY;
 
     @Async
-    public void notifyNews(String title) {
-        log.info("notifyNews: " + title);
+    public void notifyNews(String sede, String title) {
+        log.info("notifyNews: " + sede + " - " + title);
         try {
 
             Sender sender = new Sender(FCMSERVERKEY);
@@ -42,9 +42,21 @@ public class Notifier {
             Map<String, Object> payload = new HashMap<>();
             payload.put(Constant.FIREBASE_PAYLOAD_GO, Constant.FIREBASE_PAYLOAD_GO_NEWS);
 
+            // Selecting topic name by sede
+            String topicname = Constant.FIREBASE_TOPIC_NEWS;
+            if("L".equals(sede)){
+                topicname = Constant.FIREBASE_TOPIC_NEWS_LIMA;
+            }else if("A".equals(sede)){
+                topicname = Constant.FIREBASE_TOPIC_NEWS_AREQUIPA;
+            }else if("T".equals(sede)){
+                topicname = Constant.FIREBASE_TOPIC_NEWS_TRUJILLO;
+            }else if("H".equals(sede)){
+                topicname = Constant.FIREBASE_TOPIC_NEWS_HUANCAYO;
+            }
+
             // Compose a Message:
             Message message = new Message.Builder()
-                    .to(new Topic(Constant.FIREBASE_TOPIC_NEWS))
+                    .to(new Topic(topicname))
                     .data(payload)
                     .notification(notification)
                     .build();

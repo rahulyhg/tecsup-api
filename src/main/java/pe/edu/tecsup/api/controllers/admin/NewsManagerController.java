@@ -141,7 +141,7 @@ public class NewsManagerController {
             }
 
             // Notification
-            notifier.notifyNews(neu.getTitle());
+            notifier.notifyNews(neu.getSede(), neu.getTitle());
 
             redirectAttrs.addFlashAttribute("message", "Registro guardado correctamente");
             return "redirect:/admin/news/";
@@ -178,6 +178,7 @@ public class NewsManagerController {
             neuOriginal.setTitle(neu.getTitle());
             neuOriginal.setSummary(neu.getSummary());
             neuOriginal.setContent(neu.getContent());
+            neuOriginal.setSede(neu.getSede());
 
             if (!file.isEmpty()) {
                 log.info("Save with file " + file.getOriginalFilename());

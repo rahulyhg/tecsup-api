@@ -28,9 +28,9 @@ public class NewsService {
         return newsRepository.listAll();
     }
 
-    public List<New> listAllPublished() throws Exception {
-        log.info("calling listAllPublished: ");
-        return newsRepository.listAllPublished();
+    public List<New> listAllPublishedBySede(String sede) throws Exception {
+        log.info("calling listAllPublishedBySede: " + sede);
+        return newsRepository.listAllPublishedBySede(sede);
     }
 
     public New findOne(Long id) throws Exception {

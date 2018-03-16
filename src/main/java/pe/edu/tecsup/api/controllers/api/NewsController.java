@@ -54,7 +54,7 @@ public class NewsController {
 //            neu.setPublished("07/05/2017");
 //            news.add(neu);
 
-            List<New> news = newsService.listAllPublished();
+            List<New> news = newsService.listAllPublishedBySede(user.getSede());
 
             log.info("news: " + news);
 

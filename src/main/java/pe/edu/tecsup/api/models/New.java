@@ -42,6 +42,9 @@ public class New {
     @Column(length = 255)
     private String picture;
 
+    @Column(length = 1, columnDefinition="CHAR")
+    private String sede;
+
     @Column(length = 1)
     private Integer activated;
 
@@ -105,6 +108,14 @@ public class New {
         this.picture = picture;
     }
 
+    public String getSede() {
+        return sede;
+    }
+
+    public void setSede(String sede) {
+        this.sede = sede;
+    }
+
     public Integer getActivated() {
         return activated;
     }
@@ -153,6 +164,21 @@ public class New {
         this.updatedby = updatedby;
     }
 
+    public String getSedeFullname(){
+        if(null == this.sede){
+            return "Todas las sedes";
+        }else if("L".equals(this.sede)){
+            return "Lima";
+        }else if("A".equals(this.sede)){
+            return "Arequipa";
+        }else if("T".equals(this.sede)){
+            return "Trujillo";
+        }else if("H".equals(this.sede)){
+            return "Huancayo";
+        }
+        return this.sede;
+    }
+
     @Override
     public String toString() {
         return "New{" +
@@ -162,6 +188,7 @@ public class New {
                 ", content='" + content + '\'' +
                 ", published=" + published +
                 ", picture='" + picture + '\'' +
+                ", sede='" + sede + '\'' +
                 ", activated=" + activated +
                 ", deleted=" + deleted +
                 ", createdat=" + createdat +

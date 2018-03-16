@@ -48,6 +48,7 @@
                         <th width="64">ID</th>
                         <th width="70"></th>
                         <th>T&iacute;tulo/Contenido</th>
+                        <th width="120">Sede</th>
                         <th width="100">Publicado</th>
                         <th width="100">Estado</th>
                         <th width="80" colspan="3">Acciones</th>
@@ -61,6 +62,7 @@
                             <strong th:text="${n.title}"></strong><br/>
                             <span th:text="${n.summary}"></span>
                         </td>
+                        <td th:text="${n.sedeFullname}"></td>
                         <td th:text="${#dates.format(n.published, 'dd/MM/yyyy')}"></td>
                         <td><input class="activated" type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-on="Activo" data-off="Inactivo" th:checked="${n.activated}" th:value="${n.id}"></td>
                         <td><a href="#" th:href="@{/admin/news/view/} + ${n.id}" class="btn btn-info"><i class="glyphicon glyphicon-eye-open"></i> Ver</a></td>

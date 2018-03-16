@@ -48,6 +48,10 @@ public class Constant {
     public static final String FIREBASE_PAYLOAD_GO_ALERTS = "ALERTS";
 
     public static final String FIREBASE_TOPIC_NEWS = "news";
+    public static final String FIREBASE_TOPIC_NEWS_LIMA = "news-Lima";
+    public static final String FIREBASE_TOPIC_NEWS_AREQUIPA = "news-Arequipa";
+    public static final String FIREBASE_TOPIC_NEWS_TRUJILLO = "news-Trujillo";
+    public static final String FIREBASE_TOPIC_NEWS_HUANCAYO = "news-Huancayo";
 
     public static final String INCIDENT_STATUS_PENDIENT = "P";
     public static final String INCIDENT_STATUS_ATENTION = "A";

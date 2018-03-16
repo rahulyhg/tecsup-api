@@ -54,9 +54,25 @@
                         <textarea id="content" name="content" th:field="*{content}" class="form-control ckeditor" required=""></textarea>
                     </div>
 
+                    <div class="btn-group" data-toggle="buttons">
+                        <label class="btn btn-default" th:classappend="*{sede} == null ? 'active' : ''">
+                            <input type="radio" name="sede" th:field="*{sede}" id="all" autocomplete="off" value="" required=""> Todas las sedes
+                        </label>
+                        <label class="btn btn-default" th:classappend="*{sede} == 'L' ? 'active' : ''">
+                            <input type="radio" name="sede" th:field="*{sede}" id="sede1" autocomplete="off" value="L"> Lima
+                        </label>
+                        <label class="btn btn-default" th:classappend="*{sede} == 'A' ? 'active' : ''">
+                            <input type="radio" name="sede" th:field="*{sede}" id="sede2" autocomplete="off" value="A"> Arequipa
+                        </label>
+                        <label class="btn btn-default" th:classappend="*{sede} == 'T' ? 'active' : ''">
+                            <input type="radio" name="sede" th:field="*{sede}" id="sede3" autocomplete="off" value="T"> Trujillo
+                        </label>
+                    </div>
+
                 </div>
                 <div class="panel-footer">
                     <input type="submit" class="btn btn-primary" value="Guardar">
+                    <a href="#" th:href="@{/admin/news/}" class="btn btn-default">Cancelar</a>
                 </div>
             </div>
         </form>
