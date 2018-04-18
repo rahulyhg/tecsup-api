@@ -6,7 +6,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import io.jsonwebtoken.JwtException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,12 +13,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.tecsup.api.models.PhoneNumber;
-import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.JwtTokenService;
 import pe.edu.tecsup.api.services.TeacherService;
@@ -27,7 +25,6 @@ import pe.edu.tecsup.api.services.UserService;
 import pe.edu.tecsup.api.utils.Constant;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 @RestController
 @RequestMapping("/api/jwt")
@@ -48,11 +45,12 @@ public class JwtAuthController {
     private TeacherService teacherService;
 
     @PostMapping("access_token")
-    public ResponseEntity<?> createAuthenticationToken(@RequestParam String username, @RequestParam String password) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestParam String username, @RequestParam String password, @RequestParam String instanceid,
+                                                       @RequestParam(required = false, defaultValue = Constant.APP_TECSUP) String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
         log.info("call createAuthenticationToken: "+username+"-"+password);
         try {
 
-            // Attempt to verify the credentials and pass or throws BadCredentialsException
+            // Attempt to verify the credentials and pass or throws AuthenticationException
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -65,10 +63,13 @@ public class JwtAuthController {
             log.info("Token: " + token);
             user.setToken(token);
 
+            // Updating instance in db
+            userService.saveAccess(app, user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+
             // Return the token
             return ResponseEntity.ok(user);
 
-        }catch (UsernameNotFoundException e){
+        }catch (AuthenticationException e){
             log.error(e, e);
             throw new Exception(e.getMessage());
         }catch (Throwable e){
@@ -174,6 +175,9 @@ public class JwtAuthController {
             // Get PhoneNumber
             PhoneNumber phoneNumber = teacherService.getPhoneNumber(instanceid);
             user.setPhoneNumber(phoneNumber);
+
+//            if ("erick.benites@tecsup.edu.pe".equals(email))
+//                user.setPhoneNumber(teacherService.getPhoneNumber("cX-_m77cWbI:APA91bGtGlPlcJ1kcabVsgDdneLC41PjNfdTZYLu5UmT9Yk3ypf0r4PkWqyMKurog06SfmcxQI6YxfZYusNxLoF7XlZJt8039AU3SGNIA3QvWkaw4mFPbcwF7EqHqFpBAnUuGm37BQWZ"));
 
             // Generate Token from User
             String token = jwtTokenService.generateToken(user.getUsername());

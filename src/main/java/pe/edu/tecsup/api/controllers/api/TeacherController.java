@@ -1,7 +1,6 @@
 package pe.edu.tecsup.api.controllers.api;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -127,7 +126,10 @@ public class TeacherController {
 
             PhoneNumber phoneNumber = teacherService.getPhoneNumber(instanceid);
 //            if(phoneNumber.getActivated())
-                supportPortal.setPhoneNumber(phoneNumber);
+            supportPortal.setPhoneNumber(phoneNumber);
+
+//            if ("erick.benites@tecsup.edu.pe".equals(user.getEmail()))
+//                supportPortal.setPhoneNumber(teacherService.getPhoneNumber("cX-_m77cWbI:APA91bGtGlPlcJ1kcabVsgDdneLC41PjNfdTZYLu5UmT9Yk3ypf0r4PkWqyMKurog06SfmcxQI6YxfZYusNxLoF7XlZJt8039AU3SGNIA3QvWkaw4mFPbcwF7EqHqFpBAnUuGm37BQWZ"));
 
             log.info("supportPortal: " + supportPortal);
 
