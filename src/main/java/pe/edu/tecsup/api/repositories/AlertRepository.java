@@ -120,7 +120,8 @@ public class AlertRepository {
                     "from evaluacion.eva_v_curso_alumno ca\n" +
                     "inner join evaluacion.eva_v_cursos c on c.codcursoejec=ca.codcursoejec and c.situacionregistro='A'\n" +
                     "inner join evaluacion.eva_curso_periodo cp on cp.codcursoejec=c.codcursoejec\n" +
-                    "inner join evaluacion.eva_v_periodo p on p.codperiodo=cp.codperiodo and p.situacionregistro='A'\n" +
+                    "--inner join evaluacion.eva_v_periodo p on p.codperiodo=cp.codperiodo and p.situacionregistro='A'\n" +
+                    "inner join general.gen_periodo p on p.codigo=cp.codperiodo and p.tipo='S' and p.estado=1\n" +
                     "inner join evaluacion.eva_v_seccion s on s.codseccion=ca.seccion\n" +
                     "LEFT JOIN API_INSTANCES I ON I.LASTUSERID=CA.CODALUMNO AND I.APP='TECSUP' AND I.STATUS='1'\n" +
                     "where 1=1\n" +

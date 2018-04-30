@@ -6,6 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import pe.edu.tecsup.api.models.APIMessage;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.UserService;
 
@@ -30,6 +32,9 @@ public class UserController {
 //            User user = userService.loadUserByUsername(username);
             log.info("User: " + user);
 
+            user.setCardID(userService.loadCardID(user.getId()));
+            log.info("CardID: " + user.getCardID());
+
             return ResponseEntity.ok(user);
 
         }catch (Throwable e){
@@ -49,6 +54,21 @@ public class UserController {
 //            return ResponseEntity.ok(media);
             return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(media);
 
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @PostMapping("picture")
+    public ResponseEntity<?> store(@RequestParam("file") MultipartFile file, @AuthenticationPrincipal User user) throws Exception {
+        log.info("calling store: " + user);
+        try{
+            if (file.isEmpty()) throw new Exception("No se ha cargado una foto");
+
+            userService.savePicture(user.getId(), file);
+
+            return ResponseEntity.ok(APIMessage.create("Foto cargada satisfatoriamente"));
         }catch (Throwable e){
             log.error(e, e);
             throw e;

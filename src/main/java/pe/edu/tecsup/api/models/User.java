@@ -2,6 +2,7 @@ package pe.edu.tecsup.api.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.userdetails.UserDetails;
+import pe.edu.tecsup.api.utils.Constant;
 
 import java.util.Collection;
 
@@ -23,9 +24,13 @@ public class User implements UserDetails {
     /* Sitec */
     private String sede;
     private Integer role;
+    private String dni;
 
     /* PhoneNumber */
     private PhoneNumber phoneNumber;
+
+    /* Card ID */
+    private CardID cardID;
 
     /* Spring Security related fields*/
     private Collection<Role> authorities;
@@ -48,6 +53,24 @@ public class User implements UserDetails {
 
     public void setAuthorities(Collection<Role> authorities) {
         this.authorities = authorities;
+
+        // Default role
+        if(this.getAuthorities() != null) {
+            if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ADMINISTRADOR)))
+                this.setRole(Constant.ROLE_SEVA_ADMINISTRADOR);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_PORTAL_SOPORTE)))
+                this.setRole(Constant.ROLE_PORTAL_SOPORTE);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_SECRETARIA)))
+                this.setRole(Constant.ROLE_SEVA_SECRETARIA);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DIRECTOR)))
+                this.setRole(Constant.ROLE_SEVA_DIRECTOR);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_JEFE_DEPARTAMENTO)))
+                this.setRole(Constant.ROLE_SEVA_JEFE_DEPARTAMENTO);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_DOCENTE)))
+                this.setRole(Constant.ROLE_SEVA_DOCENTE);
+            else if (this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE)) || this.getAuthorities().contains(new Role(Constant.ROLE_SEVA_ESTUDIANTE_ANTIGUO)))
+                this.setRole(Constant.ROLE_SEVA_ESTUDIANTE);
+        }
     }
 
     public String getPassword() {
@@ -170,12 +193,28 @@ public class User implements UserDetails {
         this.role = role;
     }
 
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
     public PhoneNumber getPhoneNumber() {
         return phoneNumber;
     }
 
     public void setPhoneNumber(PhoneNumber phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public CardID getCardID() {
+        return cardID;
+    }
+
+    public void setCardID(CardID cardID) {
+        this.cardID = cardID;
     }
 
     public boolean hasRole(Integer roleid){
@@ -197,9 +236,12 @@ public class User implements UserDetails {
                 ", token='" + token + '\'' +
                 ", sede='" + sede + '\'' +
                 ", role=" + role +
+                ", dni='" + dni + '\'' +
+                ", phoneNumber=" + phoneNumber +
+                ", cardID=" + cardID +
                 ", authorities=" + authorities +
-                ", password='" + password + '\'' +
                 ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
                 ", accountNonExpired=" + accountNonExpired +
                 ", accountNonLocked=" + accountNonLocked +
                 ", credentialsNonExpired=" + credentialsNonExpired +

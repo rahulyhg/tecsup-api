@@ -3,7 +3,6 @@ package pe.edu.tecsup.api.repositories;
 import oracle.jdbc.internal.OracleTypes;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -12,9 +11,13 @@ import org.springframework.jdbc.core.SqlParameterValue;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.jdbc.core.support.SqlLobValue;
+import org.springframework.jdbc.support.lob.DefaultLobHandler;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.multipart.MultipartFile;
+import pe.edu.tecsup.api.models.CardID;
 import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.utils.Constant;
@@ -24,11 +27,13 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -80,30 +85,51 @@ public class UserRepository {
         log.info("loadUserByUsername: "+username);
         try {
 
-            String sql = "SELECT U.CODSUJETO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(U.CODSUJETO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(U.CODSUJETO) AS NAME, TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, P.LUGAR AS SEDE \n" +
-                        "FROM SEGURIDAD.SEG_USUARIO U \n" +
-                        "INNER JOIN PERSONAL.PER_EMPLEADO P ON P.CODEMPLEADO=U.CODSUJETO AND P.ESACTIVO='S' \n" +
-                        "WHERE EXISTS(SELECT * FROM SEGURIDAD.SEG_USUARIO_ROL WHERE USUARIO=U.USUARIO /*AND CODROL IN (132, 134, 143, 146)*/) \n" + // Admin, Secdoc, Docente, Jefe
-                        "AND REGEXP_LIKE(trim(U.USUARIO), '^[[:alpha:]]+$') " +
-                        "AND (U.USUARIO = ?    OR P.CORREO = ?) \n" + // OR CORREO = ? casos usuario!=correo (mchavez!=mchavezl)
-                        "UNION ALL \n" +
-                        "SELECT CODALUMNO AS ID, LOWER(TRIM(CODCARNET)) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, A.CORREO, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
-                        "FROM DOCENCIA.DOC_ALUMNO A \n" +
-                        "WHERE A.CONDICION NOT IN ('P', 'X') \n" +
-                        "AND (A.CORREO = ?||'@tecsup.edu.pe'    OR CODCARNET = UPPER(?)) "; // OR CODCARNET = ? hack!
+            String sql =
+                    "-- EMPLEADOS/DOCENTES\n" +
+                    "SELECT 'EMPLEADO' AS TIPO, P.CODEMPLEADO AS ID, TRIM(U.USUARIO) AS USUARIO, GENERAL.NOMBRECLIENTE(P.CODEMPLEADO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(P.CODEMPLEADO) AS NAME, \n" +
+                    "TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, (SELECT TRIM(NUMDOCUMENTO) FROM GENERAL.GEN_PERSONA WHERE CODPERSONA=P.CODEMPLEADO) AS DNI, P.LUGAR AS SEDE \n" +
+                    "FROM PERSONAL.PER_EMPLEADO P\n" +
+                    "INNER JOIN SEGURIDAD.SEG_USUARIO U  ON U.CODSUJETO=P.CODEMPLEADO AND U.ESACTIVO='S'\n" +
+                    "WHERE P.ESACTIVO='S' AND REGEXP_LIKE(TRIM(U.USUARIO), '^[[:alpha:]]+$') \n" +
+                    "AND (P.CORREO = ? /*FIX->*/ OR U.USUARIO = ?)\n" +
+                    "\n" +
+                    "UNION ALL \n" +
+                    "\n" +
+                    "-- ALUMNOS PFR\n" +
+                    "SELECT 'ALUMNO' AS TIPO, CODALUMNO AS ID, LOWER(TRIM(CODCARNET)) AS USUARIO, GENERAL.NOMBRECLIENTE(CODALUMNO) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(CODALUMNO) AS NAME, \n" +
+                    "A.CORREO AS CORREO, (SELECT TRIM(NUMDOCUMENTO) FROM GENERAL.GEN_PERSONA WHERE CODPERSONA=A.CODALUMNO) AS DNI, (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERULTMATRICULA) AS SEDE \n" +
+                    "FROM DOCENCIA.DOC_ALUMNO A \n" +
+                    "WHERE A.CONDICION NOT IN ('P', 'X') \n" +
+                    "AND (A.CORREO = ?||'@tecsup.edu.pe' /*FIX->*/ OR A.CODCARNET = UPPER(?))\n" +
+                    "\n" +
+                    "UNION ALL\n" +
+                    "\n" +
+                    "-- PARTICIPANTES PCC\n" +
+                    "SELECT 'PARTICIPANTE' AS TIPO, P.CODPERSONA AS ID, TRIM(P.NUMDOCUMENTO) AS USUARIO, GENERAL.NOMBRECLIENTE(P.CODPERSONA) AS FULLNAME, GENERAL.NOMBRECORTOCLIENTE(P.CODPERSONA) AS NAME, \n" +
+                    "GENERAL.CORREOCLIENTE(P.CODPERSONA) AS CORREO, TRIM(NUMDOCUMENTO) AS DNI, (SELECT (SELECT SEDE FROM GENERAL.GEN_PERIODO WHERE CODIGO=A.CODPERIODO) FROM COMERCIAL.COM_PRODUCTO_ACTIVIDAD A \n" +
+                    "    WHERE CODPROACTIVIDAD = (SELECT MAX(I.CODPROACTIVIDAD) FROM COMERCIAL.COM_INSCRIPCION I \n" +
+                    "        INNER JOIN COMERCIAL.COM_PRODUCTO_ACTIVIDAD A ON I.CODPROACTIVIDAD = A.CODPROACTIVIDAD AND A.ESTADO IN ('A', 'C') AND A.CODFAMILIA NOT IN (100, 23, 20) -- NOT IN ('PFR','C.E.','CONCEPTOS')\n" +
+                    "        WHERE I.ESTADO='A' AND I.CODPARTICIPANTE = P.CODPERSONA)) AS SEDE \n" +
+                    "FROM GENERAL.GEN_PERSONA P\n" +
+                    "WHERE EXISTS(SELECT * FROM COMERCIAL.COM_INSCRIPCION I \n" +
+                    "    INNER JOIN COMERCIAL.COM_PRODUCTO_ACTIVIDAD A ON I.CODPROACTIVIDAD = A.CODPROACTIVIDAD AND A.ESTADO IN ('A', 'C') AND A.CODFAMILIA NOT IN (100, 23, 20) -- NOT IN ('PFR','C.E.','CONCEPTOS')\n" +
+                    "    WHERE I.ESTADO='A' AND I.CODPARTICIPANTE = P.CODPERSONA)\n" +
+                    "AND P.NUMDOCUMENTO = ? ";
 
             User user = jdbcTemplate.queryForObject(sql, new RowMapper<User>() {
                 public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                     User user = new User();
-                    user.setUsername(rs.getString("USUARIO"));
                     user.setId(rs.getInt("ID"));
+                    user.setUsername(rs.getString("USUARIO"));
                     user.setFullname(rs.getString("FULLNAME"));
                     user.setName(rs.getString("NAME"));
                     user.setEmail(rs.getString("CORREO"));
+                    user.setDni(rs.getString("DNI"));
                     user.setSede(rs.getString("SEDE"));
                     return user;
                 }
-            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username), username,    new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
+            }, new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username), new SqlParameterValue(OracleTypes.FIXED_CHAR, username));
 
             sql = "SELECT CODIGO AS ID, NOMBRE AS NAME \n" +
                     "FROM SEGURIDAD.SEG_USUARIO_ROL U \n" +
@@ -153,6 +179,62 @@ public class UserRepository {
             log.error(e, e);
             throw new UsernameNotFoundException("Usuario no encontrado: " + username);
         }
+    }
+
+    public CardID loadCardID(Integer id) throws UsernameNotFoundException {
+        log.info("loadCardID: "+id);
+
+        final CardID cardID = new CardID();
+        cardID.setId(id);
+        cardID.setActive(false);
+
+        try {
+
+            // Fec de Venc.
+            String sql = "select INITCAP(replace(to_char(max(c.fecfin) + 30, 'dd MONTH yyyy'), '     ', '')) as fvencimiento\n" +
+                    "from comercial.com_inscripcion i\n" +
+                    "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad\n" +
+                    "where i.estado = 'A'\n" +
+                    "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
+                    "and c.fecinicio < sysdate and c.fecfin > sysdate\n" +
+                    "and i.codparticipante = ?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    cardID.setActive(true);
+                    cardID.setExpiration(rs.getString("fvencimiento"));
+                    return cardID;
+                }
+            }, id);
+
+//            if(cardID.getExpiration() == null)
+//                return null;
+
+            // Curso de hoy
+            sql = "select c.codproducto, c.producto, c.nomcortofamilia, c.fecinicio, c.fecfin, c.horario\n" +
+                    "from comercial.com_inscripcion i\n" +
+                    "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad \n" +
+                    "where i.estado = 'A'\n" +
+                    "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
+                    "and c.fecinicio < sysdate and c.fecfin > sysdate\n" +
+                    "and c.nomcortofamilia!='MODULO' and upper(horario) like '%' || translate(to_char(sysdate, 'DY'), 'ÁÉ', 'AE') || '%' and rownum=1 -- No modulos y actual\n" +
+                    "and i.codparticipante = ?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    cardID.setPorduct(rs.getString("producto"));
+                    cardID.setSchedule(rs.getString("horario"));
+                    return cardID;
+                }
+            }, id);
+
+        }catch (EmptyResultDataAccessException e){
+            log.warn(e);
+        }
+
+        log.info("cardID found: " + cardID);
+
+        return cardID;
     }
 
     public byte[] loadUserPicture(Integer id) throws Exception {
@@ -231,6 +313,33 @@ public class UserRepository {
             log.info("Generic picture showing: " + bytes.length + " bytes");
 
             return bytes;
+
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    public void savePicture(Integer id, MultipartFile picture) throws Exception {
+        log.info("savePicture("+id+", "+picture+")");
+        try {
+
+            String sql = "UPDATE GENERAL.GEN_PERSONA_FOTO SET FOTO=?, FECCREACION=SYSDATE WHERE CODPERSONA=?";
+
+            int affecteds = jdbcTemplate.update(sql, new Object[]{
+                    new SqlLobValue(picture.getInputStream(), (int)picture.getSize(), new DefaultLobHandler()), id
+            }, new int[] { Types.BLOB, Types.INTEGER });
+            log.info("Picture: affecteds rows: " + affecteds);
+
+            if(affecteds == 0){
+
+                sql = "INSERT INTO GENERAL.GEN_PERSONA_FOTO(FOTO, CODPERSONA, FECCREACION) VALUES(?, ?, SYSDATE)";
+                int inserteds = jdbcTemplate.update(sql, new Object[]{
+                        new SqlLobValue(picture.getInputStream(), (int)picture.getSize(), new DefaultLobHandler()), id
+                }, new int[] { Types.BLOB, Types.INTEGER });
+                log.info("Picture: inserteds rows: " + inserteds);
+
+            }
 
         }catch (Exception e){
             log.error(e, e);

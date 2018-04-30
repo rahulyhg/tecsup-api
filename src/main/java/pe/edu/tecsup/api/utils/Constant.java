@@ -9,6 +9,7 @@ public class Constant {
     public static final String APP_TECSUP = "TECSUP";
     public static final String APP_TECSUP_DOCENTE = "TECSUP-DOCENTES";
     public static final String APP_TECSUP_SOPORTE = "TECSUP-SOPORTE";
+    public static final String APP_TECSUP_PCC = "TECSUP-PCC";
 
     public static final int SEGURIDAD_USUARIO_ACEPTADA = 0;
     public static final int SEGURIDAD_USUARIO_NO_ENCONTRADO = -1;

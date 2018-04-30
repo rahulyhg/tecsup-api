@@ -55,7 +55,7 @@ public class JwtAuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Get User data from database
-            User user = userService.loadUserByUsername(username);
+            User user = userService.loadUserByUsername(username, app);
             log.info("User: " + user);
 
             // Generate Token from User
