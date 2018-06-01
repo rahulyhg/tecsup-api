@@ -91,7 +91,7 @@ public class UserRepository {
                     "TRIM(P.CORREO)||'@tecsup.edu.pe' AS CORREO, (SELECT TRIM(NUMDOCUMENTO) FROM GENERAL.GEN_PERSONA WHERE CODPERSONA=P.CODEMPLEADO) AS DNI, P.LUGAR AS SEDE \n" +
                     "FROM PERSONAL.PER_EMPLEADO P\n" +
                     "INNER JOIN SEGURIDAD.SEG_USUARIO U  ON U.CODSUJETO=P.CODEMPLEADO AND U.ESACTIVO='S'\n" +
-                    "WHERE P.ESACTIVO='S' AND REGEXP_LIKE(TRIM(U.USUARIO), '^[[:alpha:]]+$') \n" +
+                    "WHERE /*P.ESACTIVO='S' AND*/ REGEXP_LIKE(TRIM(U.USUARIO), '^[[:alpha:]]+$') \n" +
                     "AND (P.CORREO = ? /*FIX->*/ OR U.USUARIO = ?)\n" +
                     "\n" +
                     "UNION ALL \n" +
@@ -186,12 +186,11 @@ public class UserRepository {
 
         final CardID cardID = new CardID();
         cardID.setId(id);
-        cardID.setActive(false);
 
         try {
 
             // Fec de Venc.
-            String sql = "select INITCAP(replace(to_char(max(c.fecfin) + 30, 'dd MONTH yyyy'), '     ', '')) as fvencimiento\n" +
+            String sql = "select INITCAP(regexp_replace(to_char(max(c.fecfin) + 30, 'dd MONTH yyyy'), '[[:space:]]+', chr(32))) as fvencimiento\n" +
                     "from comercial.com_inscripcion i\n" +
                     "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad\n" +
                     "where i.estado = 'A'\n" +
@@ -201,32 +200,53 @@ public class UserRepository {
 
             jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
                 public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    cardID.setActive(true);
+                    cardID.setActive(rs.getString("fvencimiento") != null);
                     cardID.setExpiration(rs.getString("fvencimiento"));
                     return cardID;
                 }
             }, id);
 
-//            if(cardID.getExpiration() == null)
-//                return null;
-
-            // Curso de hoy
-            sql = "select c.codproducto, c.producto, c.nomcortofamilia, c.fecinicio, c.fecfin, c.horario\n" +
-                    "from comercial.com_inscripcion i\n" +
-                    "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad \n" +
-                    "where i.estado = 'A'\n" +
-                    "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
-                    "and c.fecinicio < sysdate and c.fecfin > sysdate\n" +
-                    "and c.nomcortofamilia!='MODULO' and upper(horario) like '%' || translate(to_char(sysdate, 'DY'), 'ÁÉ', 'AE') || '%' and rownum=1 -- No modulos y actual\n" +
-                    "and i.codparticipante = ?";
+            // Get DNI
+            sql = "select trim(numdocumento) as dni from general.gen_persona where codpersona=?";
 
             jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
                 public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    cardID.setPorduct(rs.getString("producto"));
-                    cardID.setSchedule(rs.getString("horario"));
+                    cardID.setDni(rs.getString("DNI"));
                     return cardID;
                 }
             }, id);
+
+            // Has Picture
+            sql = "select count(codpersona) haspicture from general.gen_persona_foto where foto is not null and codpersona=?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        cardID.setPicture(rs.getInt("haspicture") != 0);
+                    return cardID;
+                }
+            }, id);
+
+            if(cardID.getActive()) {
+
+                // Curso de hoy
+                sql = "select c.codproducto, c.producto, c.nomcortofamilia, c.fecinicio, c.fecfin, c.horario\n" +
+                        "from comercial.com_inscripcion i\n" +
+                        "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad \n" +
+                        "where i.estado = 'A'\n" +
+                        "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
+                        "and c.fecinicio < sysdate and c.fecfin > sysdate\n" +
+                        "and c.nomcortofamilia!='MODULO' and upper(horario) like '%' || translate(to_char(sysdate, 'DY'), 'ÁÉ', 'AE') || '%' and rownum=1 -- No modulos y actual\n" +
+                        "and i.codparticipante = ?";
+
+                jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                    public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        cardID.setPorduct(rs.getString("producto"));
+                        cardID.setSchedule(rs.getString("horario"));
+                        return cardID;
+                    }
+                }, id);
+
+            }
 
         }catch (EmptyResultDataAccessException e){
             log.warn(e);
@@ -276,7 +296,7 @@ public class UserRepository {
 
             BufferedImage image = ImageIO.read(stream);
 
-            int width = 256;
+            int width = 512;
             int height = (image.getHeight()*width)/image.getWidth();
 
             // Create a new buffered image

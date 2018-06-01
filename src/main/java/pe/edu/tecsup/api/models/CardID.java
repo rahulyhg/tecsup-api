@@ -4,9 +4,13 @@ public class CardID {
 
     private Integer id;
 
+    private String dni;
+
     private Boolean active;
 
     private String expiration;
+
+    private Boolean picture;
 
     private String porduct;
 
@@ -18,6 +22,14 @@ public class CardID {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getDni() {
+        return dni;
+    }
+
+    public void setDni(String dni) {
+        this.dni = dni;
     }
 
     public Boolean getActive() {
@@ -34,6 +46,14 @@ public class CardID {
 
     public void setExpiration(String expiration) {
         this.expiration = expiration;
+    }
+
+    public Boolean getPicture() {
+        return picture;
+    }
+
+    public void setPicture(Boolean picture) {
+        this.picture = picture;
     }
 
     public String getPorduct() {
@@ -56,8 +76,10 @@ public class CardID {
     public String toString() {
         return "CardID{" +
                 "id=" + id +
+                ", dni='" + dni + '\'' +
                 ", active=" + active +
                 ", expiration='" + expiration + '\'' +
+                ", picture=" + picture +
                 ", porduct='" + porduct + '\'' +
                 ", schedule='" + schedule + '\'' +
                 '}';
