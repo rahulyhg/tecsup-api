@@ -160,4 +160,19 @@ public class StudentController {
         }
     }
 
+    @GetMapping("programs")
+    public ResponseEntity<?> getPrograms(@AuthenticationPrincipal User user) throws Exception{
+        log.info("call getPrograms: user:" + user);
+        try {
+
+            List<Program> programs = studentervice.getProgramsByStudent(user.getId());
+            log.info("programs: " + programs);
+
+            return ResponseEntity.ok(programs);
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
 }

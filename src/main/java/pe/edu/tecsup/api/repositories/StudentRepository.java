@@ -2,7 +2,6 @@ package pe.edu.tecsup.api.repositories;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -255,6 +254,7 @@ public class StudentRepository {
     public List<Course> getCourses(Integer id) throws Exception {
         log.info("id: "+id);
         try {
+
             SimpleJdbcCall simpleJdbcCall = new SimpleJdbcCall(jdbcTemplate);
 
             simpleJdbcCall.withSchemaName("DOCENCIA").withCatalogName("API").withProcedureName("CURSOSXALUMNO");
@@ -661,6 +661,81 @@ public class StudentRepository {
         }catch (Exception e){
             log.error(e, e);
             throw e;
+        }
+    }
+
+    public List<Program> getProgramsByStudent(Integer id) { // TMP cambiar de dni a codpersona tipo los apis de canvas
+        log.info("getProgramsByStudent: " + id);
+        try {
+
+            String sql = "select i.codparticipante, general.nombrecliente(i.codparticipante) participante, a.codproactividad,a.codfamilia, f.nombre as nomfamilia, a.descripcion nomcurso, \n" +
+                    "to_char(a.fecinicio,'dd-mm-yyyy') as fecinicio,to_char(a.fecfin,'dd-mm-yyyy') as fecfin, comercial.buscarhorarios(a.codproactividad) horario, \n" +
+                    "\n" +
+                    "(case when f.nomcorto='PINTGR' \n" +
+                    "    then (select decode(replace(comercial.buscaraulas(m.codproactcurso), '/', ''), '', null, comercial.buscaraulas(m.codproactcurso) ) from comercial.com_prod_act_modulo m where m.codproactgrupo = i.codproactividad and m.orden=1)\n" +
+                    "    else decode(replace(comercial.buscaraulas(i.codproactividad), '/', ''), '', null, comercial.buscaraulas(i.codproactividad) )\n" +
+                    "end) aula,\n" +
+                    "\n" +
+                    "(select e.razsocial from comercial.com_grupo_inscripcion g inner join general.gen_institucion e on e.codinstitucion=g.codcliresponsable where g.numgrupo=i.numgrupo) empresa\n" +
+                    "from comercial.com_inscripcion i \n" +
+                    "inner join comercial.com_producto_actividad a on i.codproactividad = a.codproactividad and a.estado in ('A', 'C') \n" +
+                    "inner join comercial.com_familia f on a.codfamilia = f.codigo and f.nomcorto not in ('PFR','C.E.','Conceptos','ADMISION') \n" +
+                    "left join comercial.com_prod_act_modulo m on m.codproactcurso=i.codproactividad\n" +
+                    "Where (m.tipo is null or m.tipo not in ('MI', 'ME', 'MT')) \n" +
+                    "and a.fecinicio < sysdate and sysdate < a.fecfin\n" +
+                    "and i.estado='A'  \n" +
+                    "and i.codparticipante=?\n" +
+                    "order by a.fecinicio desc";
+
+            List<Program> programs = jdbcTemplate.query(sql, new RowMapper<Program>() {
+                public Program mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    Program program = new Program();
+                    program.setCodactividad(rs.getInt("codproactividad"));
+                    program.setCodfamilia(rs.getInt("codfamilia"));
+                    program.setNomfamilia(rs.getString("nomfamilia"));
+                    program.setNomactividad(rs.getString("nomcurso"));
+                    program.setFecinicio(rs.getString("fecinicio"));
+                    program.setFecfin(rs.getString("fecfin"));
+                    program.setHorario(rs.getString("horario"));
+                    program.setAmbiente(rs.getString("aula"));
+                    program.setNomempresa(rs.getString("empresa"));
+
+                    return program;
+                }
+            }, id);
+
+            sql = "select codproducto, codpadre, grupo, producto,orden,to_char(fecinicio,'dd-mm-yyyy') as fecinicio, to_char(fecfin,'dd-mm-yyyy') as fecfin, comercial.buscaraulas(codproducto) aulas \n" +
+                    "from comercial.com_productos_pcc where codpadre= ?\n" +
+                    "and grupo like '%MODULO%'\n" +
+                    "order by orden";
+
+            for (Program program : programs) {
+
+                List<Module> modules = jdbcTemplate.query(sql, new RowMapper<Module>() {
+                    public Module mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        Module module = new Module();
+                        module.setCodmodule(rs.getInt("codproducto"));
+                        module.setNommodule(rs.getString("producto"));
+                        module.setOrden(rs.getInt("orden"));
+                        module.setFecinicio(rs.getString("fecinicio"));
+                        module.setFecfin(rs.getString("fecfin"));
+                        module.setAula(rs.getString("aulas"));
+
+                        return module;
+                    }
+                }, program.getCodactividad());
+
+                program.setModules(modules);
+
+            }
+
+            log.info("programs: " + programs);
+
+            return programs;
+
+        }catch (EmptyResultDataAccessException e){
+            log.error(e, e);
+            return null;
         }
     }
 

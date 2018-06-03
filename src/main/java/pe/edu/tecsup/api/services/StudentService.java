@@ -61,6 +61,11 @@ public class StudentService {
         return studentRepository.getDebtorInstancesDealy();
     }
 
+    public List<Program> getProgramsByStudent(Integer id) throws Exception {
+		log.info("calling getProgramsByStudent: " + id);
+		return studentRepository.getProgramsByStudent(id);
+	}
+
 	@Deprecated
 	public String getDeviceByToken(String tokenid) {
 		return studentRepository.getDeviceByToken(tokenid);
