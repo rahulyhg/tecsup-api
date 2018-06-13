@@ -24,7 +24,10 @@ import pe.edu.tecsup.api.services.NewsService;
 import pe.edu.tecsup.api.utils.Constant;
 import pe.edu.tecsup.api.utils.Notifier;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletContext;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Files;
@@ -111,7 +114,7 @@ public class NewsManagerController {
         try{
 
             if (!file.isEmpty()) {
-                log.info("Save with file " + file.getOriginalFilename());
+                log.info("Save with filename " + file.getOriginalFilename());
 
                 String filename = propareRepositoryFilename(file.getOriginalFilename());
 
@@ -137,7 +140,7 @@ public class NewsManagerController {
             log.info("New After: " + neu);
 
             if (!file.isEmpty()) {
-                Files.copy(file.getInputStream(), Paths.get(Constant.PATH_NEWS).resolve(neu.getPicture()));
+                uploadFile(file, neu.getPicture());
             }
 
             // Notification
@@ -181,7 +184,7 @@ public class NewsManagerController {
             neuOriginal.setSede(neu.getSede());
 
             if (!file.isEmpty()) {
-                log.info("Save with file " + file.getOriginalFilename());
+                log.info("Save with filename " + file.getOriginalFilename());
 
                 String filename = propareRepositoryFilename(file.getOriginalFilename());
 
@@ -202,7 +205,7 @@ public class NewsManagerController {
             log.info("New After: " + neuOriginal);
 
             if (!file.isEmpty()) {
-                Files.copy(file.getInputStream(), Paths.get(Constant.PATH_NEWS).resolve(neuOriginal.getPicture()));
+                uploadFile(file, neuOriginal.getPicture());
             }
 
             redirectAttrs.addFlashAttribute("message", "Registro guardado correctamente");
@@ -262,7 +265,7 @@ public class NewsManagerController {
 
             String filename = propareRepositoryFilename(file.getOriginalFilename());
 
-            Files.copy(file.getInputStream(), Paths.get(Constant.PATH_NEWS).resolve(filename));
+            uploadFile(file, filename);
 
             if(responseType != null){
                 Map<String, Object> response = new HashMap<>();
@@ -315,10 +318,50 @@ public class NewsManagerController {
                 throw new Exception("Failed to mkdirs " + directory);
         }
 
+        originalFilename = originalFilename.toLowerCase()
+                .replaceAll(" ", "-")
+                .replaceAll("á", "a").replaceAll("é", "e").replaceAll("í", "i")
+                .replaceAll("ó", "o").replaceAll("ú", "u").replaceAll("á", "a")
+                .replaceAll("[^A-Za-z0-9.\\s-]", "");    // Elimina caracteres no alfanuméricos excepto espacios
+
         int indexOf = originalFilename.lastIndexOf(".");
         if(indexOf == -1)
             indexOf = originalFilename.length();
-        return new StringBuffer(originalFilename).insert(indexOf, "-"+System.currentTimeMillis()).toString();
+        String cleanFilename = new StringBuffer(originalFilename).insert(indexOf, "-"+System.currentTimeMillis()).toString();
+        log.info("Save with clean filename " + cleanFilename);
+
+        return cleanFilename;
+    }
+
+    // Resize: https://memorynotfound.com/java-resize-image-fixed-width-height-example/
+    private static void uploadFile(MultipartFile file, String filename) throws Exception{
+
+        final float maxSize = 614400;
+        final int maxWidth = 1080;
+
+        BufferedImage image = ImageIO.read(file.getInputStream());
+
+        if(file.getSize() > maxSize || image.getWidth() > maxWidth) {
+
+            final int maxHeight = (image.getHeight()* maxWidth)/image.getWidth();
+            int type = image.getType() == 0? BufferedImage.TYPE_INT_ARGB : image.getType();
+            BufferedImage resized = new BufferedImage(maxWidth, maxHeight, type);
+            Image tmp = image.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
+            Graphics2D g2d = resized.createGraphics();
+            g2d.drawImage(tmp, 0, 0, null);
+            g2d.dispose();
+            //return resized;
+
+            // if filename ends with png then generate as png, otherside jpg
+            String extension = "jpg";
+            if(filename.toLowerCase().endsWith(".png")){
+                extension = "png";
+            }
+
+            ImageIO.write(resized, extension, new File(Constant.PATH_NEWS, filename));
+        }else {
+            Files.copy(file.getInputStream(), Paths.get(Constant.PATH_NEWS).resolve(filename));
+        }
     }
 
 }

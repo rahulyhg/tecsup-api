@@ -6,13 +6,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import pe.edu.tecsup.api.models.CardID;
 import pe.edu.tecsup.api.models.Role;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.repositories.UserRepository;
 import pe.edu.tecsup.api.utils.Constant;
 
 import javax.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -29,12 +29,23 @@ public class UserService {
 
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("calling loadUserByUsername: " + username);
-        return userDao.loadUserByUsername(username);
+        User user = userDao.loadUserByUsername(username);
+
+        // Load CardID
+        if(Constant.USUARIO_TIPO_PARTICIPANTE.equals(user.getTipo())) {
+            user.setCardID(userDao.loadCardIDPCC(user.getId()));
+        }else if(Constant.USUARIO_TIPO_ALUMNO.equals(user.getTipo())) {
+            user.setCardID(userDao.loadCardIDPFR(user.getId()));
+        }
+
+        log.info("CardID: " + user.getCardID());
+
+        return user;
     }
 
-    public User loadUserByUsername(String username, String app) throws UsernameNotFoundException {
-        log.info("calling loadUserByUsername: " + username + " - app:" + app);
-        User user = userDao.loadUserByUsername(username);
+    public User loadUserByUsernameWithApp(String username, String app) throws UsernameNotFoundException {
+        log.info("calling loadUserByUsernameWithApp: " + username + " - app:" + app);
+        User user = loadUserByUsername(username);
 
         // Default role
         if(Constant.APP_TECSUP.equals(app)){
@@ -60,18 +71,12 @@ public class UserService {
 
         log.info("Default Role: " + user.getRole());
 
-        // Load CardID
-        if(Constant.APP_TECSUP_PCC.equals(app)) {
-            user.setCardID(userDao.loadCardID(user.getId()));
-        }
-
-        log.info("CardID: " + user.getCardID());
-
         return user;
     }
 
-    public CardID loadCardID(Integer id) throws UsernameNotFoundException {
-	    return userDao.loadCardID(id);
+    public List<String> listUsernamesByDNI(String dni) throws Exception {
+        log.info("calling listUsernamesByDNI: " + dni);
+        return userDao.listUsernamesByDNI(dni);
     }
 
 	public byte[] loadUserPicture(Integer id) throws Exception {

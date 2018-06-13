@@ -12,6 +12,7 @@ import pe.edu.tecsup.api.models.User;
 
 import javax.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Component
 public class Mailer {
@@ -99,6 +100,28 @@ public class Mailer {
             String text = "<p><h3>Su solicitud de atención ha cambiado de estado a '" + estado + "'</h3></p>" +
                     "<p><b>Número:</b> " + String.format("%05d", incident.getId()) + "<br/>" +
                     "<p><b>Asistente:</b> " + incident.getTechnical() + "<br/>" +
+                    "<p>Soporte de TI</p>";
+
+            mailMsg.setText(text, true);
+            javaMailSender.send(mimeMessage);
+        }catch (Exception e){
+            log.error(e, e);
+        }
+    }
+
+    @Async
+    public void sendMailOnLogin(String to, String manufacturer, String model){
+        log.info("sendMailOnLogin: " + "t:" + to + "ma:" + manufacturer + "m:" + model);
+        try {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
+            mailMsg.setFrom(Constant.EMAIL_FROM);
+            mailMsg.setTo(to);
+            mailMsg.setBcc(Constant.EMAIL_ADMINISTRATOR);
+            mailMsg.setSubject(SUBJECT + "Alerta de inicio de sesión");
+
+            String text = "<p>Se ha iniciado sesión en tu cuenta de <b>Tecsup App</b> desde un dispositivo <b>" + manufacturer + " " + model +"</b></p>" +
+                    "<b>Fecha:</b> " + (new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date())) + "<br/></p>" +
                     "<p>Soporte de TI</p>";
 
             mailMsg.setText(text, true);

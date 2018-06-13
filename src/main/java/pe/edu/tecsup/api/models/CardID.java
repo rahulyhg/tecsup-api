@@ -16,6 +16,10 @@ public class CardID {
 
     private String schedule;
 
+    private String prerequisite;
+
+    private String condition;
+
     public Integer getId() {
         return id;
     }
@@ -72,6 +76,22 @@ public class CardID {
         this.schedule = schedule;
     }
 
+    public String getPrerequisite() {
+        return prerequisite;
+    }
+
+    public void setPrerequisite(String prerequisite) {
+        this.prerequisite = prerequisite;
+    }
+
+    public String getCondition() {
+        return condition;
+    }
+
+    public void setCondition(String condition) {
+        this.condition = condition;
+    }
+
     @Override
     public String toString() {
         return "CardID{" +
@@ -82,6 +102,8 @@ public class CardID {
                 ", picture=" + picture +
                 ", porduct='" + porduct + '\'' +
                 ", schedule='" + schedule + '\'' +
+                ", prerequisite=" + prerequisite +
+                ", condition='" + condition + '\'' +
                 '}';
     }
 }

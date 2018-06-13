@@ -375,8 +375,10 @@ public class TeacherController {
 
                 List<Score.Item> theos = score.getTheos();
                 for (Score.Item item : theos) {
-                    item.setTitle(item.getTitle() + " de Aula");
-                    assignmentsUnsorted.add("1" + item.getTitle());
+                    if("1".equals(item.getExecuted())) {
+                        item.setTitle(item.getTitle() + " de Aula");
+                        assignmentsUnsorted.add("1" + item.getTitle());
+                    }
                 }
 
                 if(score.getLabId() != null)
@@ -384,8 +386,10 @@ public class TeacherController {
 
                 List<Score.Item> labs = score.getLabs();
                 for (Score.Item item : labs) {
-                    item.setTitle(item.getTitle() + " de Laboratorio");
-                    assignmentsUnsorted.add("2" + item.getTitle());
+                    if("1".equals(item.getExecuted())) {
+                        item.setTitle(item.getTitle() + " de Laboratorio");
+                        assignmentsUnsorted.add("2" + item.getTitle());
+                    }
                 }
 
                 if(score.getWorkId() != null)
@@ -393,8 +397,10 @@ public class TeacherController {
 
                 List<Score.Item> works = score.getWorks();
                 for (Score.Item item : works) {
-                    item.setTitle(item.getTitle() + " de Taller");
-                    assignmentsUnsorted.add("3" + item.getTitle());
+                    if("1".equals(item.getExecuted())) {
+                        item.setTitle(item.getTitle() + " de Taller");
+                        assignmentsUnsorted.add("3" + item.getTitle());
+                    }
                 }
 
                 if(score.getPartialId() != null)

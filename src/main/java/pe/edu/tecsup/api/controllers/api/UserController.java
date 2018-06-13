@@ -5,11 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pe.edu.tecsup.api.models.APIMessage;
 import pe.edu.tecsup.api.models.User;
 import pe.edu.tecsup.api.services.UserService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -32,10 +36,35 @@ public class UserController {
 //            User user = userService.loadUserByUsername(username);
             log.info("User: " + user);
 
-            user.setCardID(userService.loadCardID(user.getId()));
-            log.info("CardID: " + user.getCardID());
-
             return ResponseEntity.ok(user);
+
+        }catch (Throwable e){
+            log.error(e, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("{dni}")
+    public ResponseEntity<?> getUserByDNI(@PathVariable String dni) throws Exception{
+        log.info("call getUserByDNI: " + dni);
+        try {
+
+            List<String> usernames = userService.listUsernamesByDNI(dni);
+
+            List<User> users = new ArrayList<>();
+            for (String username : usernames) {
+                try {
+                    User user = userService.loadUserByUsername(username);
+                    log.info("User: " + user);
+                    users.add(user);
+                }catch (UsernameNotFoundException e){
+                    log.warn(e.getMessage(), e);
+                }
+            }
+
+            log.info("users: " + users);
+
+            return ResponseEntity.ok(users);
 
         }catch (Throwable e){
             log.error(e, e);

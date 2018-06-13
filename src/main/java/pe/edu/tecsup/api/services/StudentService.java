@@ -36,6 +36,11 @@ public class StudentService {
 		return studentRepository.getEvents(id);
 	}
 
+    public Integer encuestasPendientes(Integer id) throws Exception {
+        log.info("calling encuestasPendientes: " + id);
+        return studentRepository.encuestasPendientes(id);
+    }
+
 	public List<Course> getCourses(Integer id) throws Exception {
 		log.info("calling getCourses: " + id);
 		return studentRepository.getCourses(id);

@@ -255,6 +255,7 @@ public class Score {
         private String title;
         private Double score;
         private Integer weight;
+        private String executed;
 
         public String getTitle() {
             return title;
@@ -280,12 +281,21 @@ public class Score {
             this.weight = weight;
         }
 
+        public String getExecuted() {
+            return executed;
+        }
+
+        public void setExecuted(String executed) {
+            this.executed = executed;
+        }
+
         @Override
         public String toString() {
             return "Item{" +
                     "title='" + title + '\'' +
                     ", score=" + score +
                     ", weight=" + weight +
+                    ", executed=" + executed +
                     '}';
         }
     }

@@ -105,6 +105,12 @@ public class StudentController {
         log.info("call getCourses: user:" + user);
         try {
 
+            Integer total = studentervice.encuestasPendientes(user.getId());
+            if (total > 0) {
+                return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
+                        .body(APIMessage.create("Debe completar sus encuestas en la web para continuar"));
+            }
+
             List<Course> courses = studentervice.getCourses(user.getId());
             log.info("courses: " + courses);
 

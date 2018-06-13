@@ -23,6 +23,7 @@ import pe.edu.tecsup.api.services.JwtTokenService;
 import pe.edu.tecsup.api.services.TeacherService;
 import pe.edu.tecsup.api.services.UserService;
 import pe.edu.tecsup.api.utils.Constant;
+import pe.edu.tecsup.api.utils.Mailer;
 
 import java.util.Arrays;
 
@@ -44,6 +45,9 @@ public class JwtAuthController {
     @Autowired
     private TeacherService teacherService;
 
+    @Autowired
+    private Mailer mailer;
+
     @PostMapping("access_token")
     public ResponseEntity<?> createAuthenticationToken(@RequestParam String username, @RequestParam String password, @RequestParam String instanceid,
                                                        @RequestParam(required = false, defaultValue = Constant.APP_TECSUP) String app, @RequestParam(required = false) String deviceid, @RequestParam(required = false) String manufacturer, @RequestParam(required = false) String model, @RequestParam(required = false) String device, @RequestParam(required = false) String kernel, @RequestParam(required = false) String version, @RequestParam(required = false) Integer sdk) throws Exception {
@@ -55,7 +59,7 @@ public class JwtAuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Get User data from database
-            User user = userService.loadUserByUsername(username, app);
+            User user = userService.loadUserByUsernameWithApp(username, app);
             log.info("User: " + user);
 
             // Generate Token from User
@@ -85,7 +89,7 @@ public class JwtAuthController {
 //            String username = jwtTokenService.parseToken(token);
 //            log.info("Token: " + token);
 //
-//            User user = userService.loadUserByUsername(username);
+//            User user = userService.loadUserByUsernameWithApp(username);
 //            log.info("User: " + user);
 //
 //            String refreshedToken = jwtTokenService.refreshToken(token);
@@ -163,7 +167,7 @@ public class JwtAuthController {
             log.info("Cuenta " + usuario + " pertenece a la lista blanca " + Arrays.toString(Constant.GOOGLEPLUS_ALLOW_DOMAINS));
 
             // Verificando si se encuentra registrado el usuario
-            User user = userService.loadUserByUsername(usuario, app);
+            User user = userService.loadUserByUsernameWithApp(usuario, app);
             log.info(user);
 
             // Gmail info
@@ -186,6 +190,9 @@ public class JwtAuthController {
 
             // Updating instance in db
             userService.saveAccess(app, user.getId(), instanceid, token, deviceid, manufacturer, model, device, kernel, version, sdk);
+
+            // Notify access alert
+            mailer.sendMailOnLogin(user.getEmail(), manufacturer, model);
 
             log.info(user);
 
@@ -236,7 +243,7 @@ public class JwtAuthController {
             userService.validateAdmin(payload.getEmail());
 
             // Verificando si se encuentra registrado el usuario
-            User user = userService.loadUserByUsername(username, app);
+            User user = userService.loadUserByUsernameWithApp(username, app);
             log.info(user);
 
             // Gmail info

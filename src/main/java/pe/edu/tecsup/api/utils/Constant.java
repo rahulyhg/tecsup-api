@@ -11,6 +11,10 @@ public class Constant {
     public static final String APP_TECSUP_SOPORTE = "TECSUP-SOPORTE";
     public static final String APP_TECSUP_PCC = "TECSUP-PCC";
 
+    public static final String USUARIO_TIPO_EMPLEADO = "EMPLEADO";
+    public static final String USUARIO_TIPO_ALUMNO = "ALUMNO";
+    public static final String USUARIO_TIPO_PARTICIPANTE = "PARTICIPANTE";
+
     public static final int SEGURIDAD_USUARIO_ACEPTADA = 0;
     public static final int SEGURIDAD_USUARIO_NO_ENCONTRADO = -1;
     public static final int SEGURIDAD_USUARIO_DESHABILITADO = -2;
@@ -39,7 +43,7 @@ public class Constant {
 
     public static final int PAGINATION_LIMIT = 20;
 
-    public static final String EMAIL_FROM = "campus@tecsup.edu.pe";
+    public static final String EMAIL_FROM = "osi-apps@tecsup.edu.pe";
     public static final String EMAIL_ADMINISTRATOR = "ebenites@tecsup.edu.pe";
 
     public static final String FIREBASE_PAYLOAD_GO = "GO";

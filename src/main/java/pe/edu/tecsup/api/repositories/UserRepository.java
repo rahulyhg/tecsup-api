@@ -82,7 +82,7 @@ public class UserRepository {
     }
 
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("loadUserByUsername: "+username);
+        log.info("loadUserByUsernameWithApp: "+username);
         try {
 
             String sql =
@@ -115,12 +115,13 @@ public class UserRepository {
                     "WHERE EXISTS(SELECT * FROM COMERCIAL.COM_INSCRIPCION I \n" +
                     "    INNER JOIN COMERCIAL.COM_PRODUCTO_ACTIVIDAD A ON I.CODPROACTIVIDAD = A.CODPROACTIVIDAD AND A.ESTADO IN ('A', 'C') AND A.CODFAMILIA NOT IN (100, 23, 20) -- NOT IN ('PFR','C.E.','CONCEPTOS')\n" +
                     "    WHERE I.ESTADO='A' AND I.CODPARTICIPANTE = P.CODPERSONA)\n" +
-                    "AND P.NUMDOCUMENTO = ? ";
+                    "AND P.NUMDOCUMENTO = ? "; // Participante Query cambiar por las tablas de Joseph cuando se migre su BD
 
             User user = jdbcTemplate.queryForObject(sql, new RowMapper<User>() {
                 public User mapRow(ResultSet rs, int rowNum) throws SQLException {
                     User user = new User();
                     user.setId(rs.getInt("ID"));
+                    user.setTipo(rs.getString("TIPO"));
                     user.setUsername(rs.getString("USUARIO"));
                     user.setFullname(rs.getString("FULLNAME"));
                     user.setName(rs.getString("NAME"));
@@ -181,8 +182,8 @@ public class UserRepository {
         }
     }
 
-    public CardID loadCardID(Integer id) throws UsernameNotFoundException {
-        log.info("loadCardID: "+id);
+    public CardID loadCardIDPCC(Integer id) throws UsernameNotFoundException {
+        log.info("loadCardIDPCC: "+id);
 
         final CardID cardID = new CardID();
         cardID.setId(id);
@@ -228,6 +229,28 @@ public class UserRepository {
 
             if(cardID.getActive()) {
 
+                // Prerequisitos
+                sql = "select c.producto, comercial.reqfaltantes(i.codproactividad, i.numgrupo, i.codparticipante) as reqfaltantes\n" +
+                        "from comercial.com_inscripcion i\n" +
+                        "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad\n" +
+                        "where i.estado = 'A'\n" +
+                        "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
+                        "and c.fecinicio < sysdate and c.fecfin > sysdate\n" +
+                        "and comercial.reqfaltantes(i.codproactividad, i.numgrupo, i.codparticipante) is not null and rownum=1\n" + // rownum=1: Solo el primer curso con prerequisito
+                        "and i.codparticipante = ?";
+
+                List<String> prerequisitos = jdbcTemplate.query(sql, new RowMapper<String>() {
+                    public String mapRow(ResultSet rs, int rowNum) throws SQLException {
+                        return rs.getString("reqfaltantes");
+                    }
+                }, id);
+
+                for(String prerequisito : prerequisitos){
+                    prerequisito = "Estimado participante, para completar su proceso de inscripción y tener acceso a su carné digital deberá de acercarse a atención al cliente (Counter) para la firma de los documentos legales.\n" +
+                            prerequisito.replaceAll("FALTA:", "Pendiente:");
+                    cardID.setPrerequisite(prerequisito);
+                }
+
                 // Curso de hoy
                 sql = "select c.codproducto, c.producto, c.nomcortofamilia, c.fecinicio, c.fecfin, c.horario\n" +
                         "from comercial.com_inscripcion i\n" +
@@ -255,6 +278,96 @@ public class UserRepository {
         log.info("cardID found: " + cardID);
 
         return cardID;
+    }
+
+    public CardID loadCardIDPFR(Integer id) throws UsernameNotFoundException {
+        log.info("loadCardIDPFR: "+id);
+
+        final CardID cardID = new CardID();
+        cardID.setId(id);
+
+        try {
+
+            // Fec de Venc.
+            cardID.setActive(true);
+
+            // Get DNI
+            String sql = "select trim(numdocumento) as dni from general.gen_persona where codpersona=?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    cardID.setDni(rs.getString("DNI"));
+                    return cardID;
+                }
+            }, id);
+
+            // Has Picture
+            sql = "select count(codpersona) haspicture from general.gen_persona_foto where foto is not null and codpersona=?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    cardID.setPicture(rs.getInt("haspicture") != 0);
+                    return cardID;
+                }
+            }, id);
+
+            // Especialidad
+            sql = "select comercial.nomprod(codespecialidad) as especialidad, trim(codcarnet) as codcarnet, ciclo || '° CICLO' as ciclo, " +
+                    "(select listagg(periodoegreso, ', ') within group (order by periodoegreso) from egresado.egr_especialidad where codegresado=a.codalumno) as periodos, " +
+                    "decode(condicion, 'R', 'REGULAR', 'I', 'REGULAR', 'S', 'REGULAR', 'G', 'REGULAR', 'E', 'EGRESADO', 'T', 'EGRESADO', 'NONE') as condicion  " +
+                    "from docencia.doc_alumno a where codalumno=?";
+
+            jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
+                public CardID mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    cardID.setPorduct(rs.getString("especialidad"));
+                    cardID.setExpiration(rs.getString("codcarnet"));
+                    cardID.setCondition(rs.getString("condicion"));
+                    if("EGRESADO".equals(cardID.getCondition())) {
+                        cardID.setSchedule(rs.getString("periodos"));
+                    }else{
+                        cardID.setSchedule(rs.getString("ciclo"));
+                    }
+                    return cardID;
+                }
+            }, id);
+
+        }catch (EmptyResultDataAccessException e){
+            log.warn(e);
+        }
+
+        log.info("cardID found: " + cardID);
+
+        return cardID;
+    }
+
+    public List<String> listUsernamesByDNI(String dni) throws Exception {
+        log.info("listUsernamesByDNI: " + dni);
+        try {
+
+            String sql = "select usuario from general.gen_persona p\n" +
+                    "inner join seguridad.seg_usuario u on u.codsujeto=p.codpersona and u.esactivo='S'\n" +
+                    "where p.numdocumento=?\n" +
+                    "union \n" +
+                    "SELECT TRIM(P.NUMDOCUMENTO) \n" + // Participante Query cambiar por las tablas de Joseph cuando se migre su BD
+                    "FROM GENERAL.GEN_PERSONA P\n" +
+                    "WHERE EXISTS(SELECT * FROM COMERCIAL.COM_INSCRIPCION I \n" +
+                    "    INNER JOIN COMERCIAL.COM_PRODUCTO_ACTIVIDAD A ON I.CODPROACTIVIDAD = A.CODPROACTIVIDAD AND A.ESTADO IN ('A', 'C') AND A.CODFAMILIA NOT IN (100, 23, 20) -- NOT IN ('PFR','C.E.','CONCEPTOS')\n" +
+                    "    WHERE I.ESTADO='A' AND I.CODPARTICIPANTE = P.CODPERSONA)\n" +
+                    "AND P.NUMDOCUMENTO = ?";
+
+            List<String> usernames = jdbcTemplate.query(sql, new RowMapper<String>() {
+                public String  mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    return rs.getString("usuario");
+                }
+            }, dni, dni);
+
+            log.info("usernames: " + usernames);
+
+            return usernames;
+        }catch (Exception e){
+            log.error(e, e);
+            throw e;
+        }
     }
 
     public byte[] loadUserPicture(Integer id) throws Exception {

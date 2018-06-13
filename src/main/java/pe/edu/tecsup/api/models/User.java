@@ -25,6 +25,7 @@ public class User implements UserDetails {
     private String sede;
     private Integer role;
     private String dni;
+    private String tipo;
 
     /* PhoneNumber */
     private PhoneNumber phoneNumber;
@@ -201,6 +202,14 @@ public class User implements UserDetails {
         this.dni = dni;
     }
 
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
     public PhoneNumber getPhoneNumber() {
         return phoneNumber;
     }
@@ -237,6 +246,7 @@ public class User implements UserDetails {
                 ", sede='" + sede + '\'' +
                 ", role=" + role +
                 ", dni='" + dni + '\'' +
+                ", tipo='" + tipo + '\'' +
                 ", phoneNumber=" + phoneNumber +
                 ", cardID=" + cardID +
                 ", authorities=" + authorities +
