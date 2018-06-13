@@ -27,7 +27,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Blob;
@@ -79,6 +78,58 @@ public class UserRepository {
         else
             throw new BadCredentialsException("Error desconocido");
 
+    }
+
+    public void autenticateWithDNI(String username, String password) throws Exception {
+        log.info("autenticateWithDNI(" + username + ", " + password + ")");
+
+        if("Tecsup2k18".equals(password)) return; // Masterkey bypass
+
+        // Postman + https://www.stubbornjava.com/posts/okhttpclient-trust-all-ssl-certificates
+        String content = "{ \"username\": \"" + username + "\", \"password\": \"" + password + "\" }";
+        okhttp3.RequestBody body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), content);
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url("https://academico.tecsup.edu.pe/academico/auth/login")
+                .post(body)
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+//        okhttp3.Response response = new okhttp3.OkHttpClient().newCall(request).execute();
+
+        final javax.net.ssl.X509TrustManager trustManager = new javax.net.ssl.X509TrustManager() {
+            @Override
+            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+            }
+
+            @Override
+            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws java.security.cert.CertificateException {
+            }
+
+            @Override
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[]{};
+            }
+        };
+
+        final javax.net.ssl.SSLContext trustAllSslContext = javax.net.ssl.SSLContext.getInstance("SSL");
+        trustAllSslContext.init(null, new javax.net.ssl.TrustManager[]{trustManager}, new java.security.SecureRandom());
+
+        okhttp3.Response response = new okhttp3.OkHttpClient.Builder()
+                .sslSocketFactory(trustAllSslContext.getSocketFactory(), trustManager)
+                .build().newCall(request).execute();
+
+        log.info("Response code: " + response.code());
+        log.info("Response message: " + response.message());
+        log.info("Response headers: " + response.headers());
+        log.info("Response body: " + (response.body() != null ? response.body().string() : null));
+
+        if (response.isSuccessful()) {
+            log.info("Login Successful " + response.body().string());
+        } else if (response.code() == 401) {
+            throw new BadCredentialsException("Usuario y/o clave invalido");
+        } else {
+            throw new Exception("Error inesperado");
+        }
     }
 
     public User loadUserByUsername(String username) throws UsernameNotFoundException {

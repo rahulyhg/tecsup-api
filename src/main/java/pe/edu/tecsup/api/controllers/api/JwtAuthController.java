@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.tecsup.api.models.PhoneNumber;
@@ -55,8 +52,10 @@ public class JwtAuthController {
         try {
 
             // Attempt to verify the credentials and pass or throws AuthenticationException
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+//            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+//            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            userService.autenticateWithDNI(username, password);
 
             // Get User data from database
             User user = userService.loadUserByUsernameWithApp(username, app);

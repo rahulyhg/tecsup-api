@@ -1,37 +1,39 @@
 # = DATA SOURCE
 spring.datasource.driver-class-name=oracle.jdbc.driver.OracleDriver
 spring.datasource.tomcat.max-wait=30000
-spring.datasource.tomcat.max-active=300
-spring.datasource.tomcat.max-idle=100
-spring.datasource.tomcat.min-idle=30
+spring.datasource.tomcat.max-active=500
+spring.datasource.tomcat.max-idle=10
+spring.datasource.tomcat.min-idle=2
+spring.datasource.tomcat.fair-queue=true
+spring.datasource.tomcat.min-evictable-idle-time-millis=20000
 
 # - Production
-#spring.datasource.url=jdbc:oracle:thin:@192.168.72.12:1521:bdtecsup
-#spring.datasource.username=docencia
-#spring.datasource.password=docencia
+#spring.datasource.url=jdbc:oracle:thin:@192.168.x.x:1521:bdxxx
+#spring.datasource.username=mov***
+#spring.datasource.password=******
 
 # - Development
-#spring.datasource.url=jdbc:oracle:thin:@192.168.200.30:1521:bdtecsup
-#spring.datasource.username=comercial
-#spring.datasource.password=comercial
+#spring.datasource.url=jdbc:oracle:thin:@192.168.x.x:1521:bdxxx
+#spring.datasource.username=mov***
+#spring.datasource.password=******
 
-# - Cloud
-spring.datasource.url=jdbc:oracle:thin:@130.211.164.31:1521:bdtecsup
-spring.datasource.username=docencia
-spring.datasource.password=docencia
+# - Prueba
+#spring.datasource.url=jdbc:oracle:thin:@192.168.x.x:1521:bdxxx
+#spring.datasource.username=mov***
+#spring.datasource.password=******
 
 # = Google API
 gapi.clientid=****************************************************************.apps.googleusercontent.com
 fcm.serverkey=A********************************************************************************************************************************ymG
 
 # = apixu.com weather
-apixu.key=543a338148814597a21235831172906
+apixu.key=5******************************
 
 # = twilio api key
 twilio.key=W73jruwo783UOe8eo38iUR84ikdvb285h
 
 # = JWT ${random.value}
-jwt.secret=secret
+jwt.secret=secret.************************************************.tecsup.edu.pe
 jwt.expiration=604800
 
 # = JPA / HIBERNATE

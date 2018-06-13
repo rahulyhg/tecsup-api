@@ -27,6 +27,11 @@ public class UserService {
 		userDao.autenticate(username, password);
 	}
 
+    public void autenticateWithDNI(String username, String password) throws Exception {
+        log.info("calling autenticateWithDNI: " + username + " - " + password);
+        userDao.autenticateWithDNI(username, password);
+    }
+
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("calling loadUserByUsername: " + username);
         User user = userDao.loadUserByUsername(username);

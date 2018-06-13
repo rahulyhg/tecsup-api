@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.stereotype.Repository;
 import pe.edu.tecsup.api.models.*;
 import pe.edu.tecsup.api.utils.ColorPalette;
@@ -256,18 +255,18 @@ public class StudentRepository {
         log.info("id: "+id);
         try {
 
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
-            dataSource.setUrl("jdbc:oracle:thin:@172.16.0.30:1521:xe");
-            dataSource.setUsername("rtorres");
-            dataSource.setPassword("T3csupaqp2K12");
+//            DriverManagerDataSource dataSource = new DriverManagerDataSource();
+//            dataSource.setDriverClassName("oracle.jdbc.driver.OracleDriver");
+//            dataSource.setUrl("jdbc:oracle:thin:@172.16.0.30:1521:xe");
+//            dataSource.setUsername("rtorres");
+//            dataSource.setPassword("T3csupaqp2K12");
+//
+//            JdbcTemplate jdbcTemplate = new JdbcTemplate();
+//            jdbcTemplate.setDataSource(dataSource);
 
-            JdbcTemplate arequipaJdbcTemplate = new JdbcTemplate();
-            arequipaJdbcTemplate.setDataSource(dataSource);
+            String sql = "select count(*) total from eva_encuesta.V_CAP_ENC_PFR_EXISTE_ENC where encuestacerrada=0 and numerorespuestas=0 and codlima_alumno=?";
 
-            String sql = "select count(*) total from tecsup.V_CAP_ENC_PFR_EXISTE_ENC where encuestacerrada=0 and numerorespuestas=0 and codlima_alumno=?";
-
-            Integer total = arequipaJdbcTemplate.queryForObject(sql, new RowMapper<Integer>() {
+            Integer total = jdbcTemplate.queryForObject(sql, new RowMapper<Integer>() {
                 public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
                     return rs.getInt("total");
                 }
