@@ -31,7 +31,7 @@ public class User implements UserDetails {
     private PhoneNumber phoneNumber;
 
     /* Card ID */
-    private CardID cardID;
+    private CardID cardID = new CardID();
 
     /* Spring Security related fields*/
     private Collection<Role> authorities;

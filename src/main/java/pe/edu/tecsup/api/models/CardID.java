@@ -6,11 +6,11 @@ public class CardID {
 
     private String dni;
 
-    private Boolean active;
+    private Boolean active = false;
 
     private String expiration;
 
-    private Boolean picture;
+    private Boolean picture = false;
 
     private String porduct;
 
