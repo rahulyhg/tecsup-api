@@ -713,7 +713,7 @@ public class StudentRepository {
                     "inner join comercial.com_familia f on a.codfamilia = f.codigo and f.nomcorto not in ('PFR','C.E.','Conceptos','ADMISION') \n" +
                     "left join comercial.com_prod_act_modulo m on m.codproactcurso=i.codproactividad\n" +
                     "Where (m.tipo is null or m.tipo not in ('MI', 'ME', 'MT')) \n" +
-                    "and a.fecinicio - 7 < sysdate and sysdate < a.fecfin + 30 \n" + // Una semana antes y hasta 30 días después
+                    "and a.fecinicio - 14 < sysdate and sysdate < a.fecfin + 30 \n" + // Una semana antes y hasta 30 días después
                     "and i.estado='A'  \n" +
                     "and i.codparticipante=?\n" +
                     "order by a.fecinicio desc";

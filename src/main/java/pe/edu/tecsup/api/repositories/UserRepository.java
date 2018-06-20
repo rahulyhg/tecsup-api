@@ -247,7 +247,7 @@ public class UserRepository {
                     "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad\n" +
                     "where i.estado = 'A'\n" +
                     "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
-                    "and c.fecinicio - 7 < sysdate and c.fecfin + 30 > sysdate\n" + // Una semana antes y hasta 30 días después
+                    "and c.fecinicio - 14 < sysdate and c.fecfin + 30 > sysdate\n" + // Una semana antes y hasta 30 días después
                     "and i.codparticipante = ?";
 
             jdbcTemplate.queryForObject(sql, new RowMapper<CardID>() {
@@ -286,7 +286,7 @@ public class UserRepository {
                         "inner join comercial.com_productos_pcc c on c.codproducto = i.codproactividad\n" +
                         "where i.estado = 'A'\n" +
                         "and c.estado in ('ACTIVO', 'CONFIRMADO')\n" +
-                        "and c.fecinicio - 7 < sysdate and c.fecfin + 30 > sysdate\n" + // Una semana antes y hasta 30 días después
+                        "and c.fecinicio - 14 < sysdate and c.fecfin + 30 > sysdate\n" + // Una semana antes y hasta 30 días después
                         "and comercial.reqfaltantes(i.codproactividad, i.numgrupo, i.codparticipante) is not null and rownum=1\n" + // rownum=1: Solo el primer curso con prerequisito
                         "and i.codparticipante = ?";
 
